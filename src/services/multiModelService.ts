@@ -272,7 +272,7 @@ export class MultiModelService {
 	 */
 	isModelConfigured(model: AIModel): boolean {
 		const config = this.modelConfigs.get(model);
-		if (!config) return false;
+		if (!config) {return false;}
 		
 		if (config.provider === 'ollama') {
 			// Ollama just needs the base URL
@@ -287,11 +287,6 @@ export class MultiModelService {
 	 */
 	getMissingApiKeys(): ModelProvider[] {
 		const missing: ModelProvider[] = [];
-		const configuredModels = Array.from(this.modelConfigs.values()).filter(
-			(model) => this.isModelConfigured(model.id)
-		);
-		
-		const providers = new Set(configuredModels.map((m) => m.provider));
 		
 		if (!this.apiKeys.get('openai')) {
 			missing.push('openai');
@@ -509,10 +504,11 @@ Return ONLY the commented code, no markdown or explanation.`;
 	/**
 	 * Call OpenAI API
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async callOpenAI(
 		model: AIModel,
 		prompt: string,
-		contextMessages: ChatMessage[]
+		_contextMessages: ChatMessage[]
 	): Promise<AIResponse> {
 		const apiKey = this.apiKeys.get('openai');
 		if (!apiKey) {
@@ -521,7 +517,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 
 		const config = this.modelConfigs.get(model)!;
 		
-		const messages: any[] = [
+		const messages = [
 			{
 				role: 'user',
 				content: prompt
@@ -540,7 +536,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 				},
 				{
 					headers: {
-						'Authorization': `Bearer ${apiKey}`
+						Authorization: `Bearer ${apiKey}`
 					}
 				}
 			);
@@ -560,7 +556,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 				model,
 				provider: 'openai'
 			};
-		} catch (error: any) {
+		} catch (error: unknown) {
 			if (axios.isAxiosError(error)) {
 				if (error.response?.status === 401) {
 					throw new Error('Invalid OpenAI API key. Please check your settings.');
@@ -625,12 +621,12 @@ Return ONLY the commented code, no markdown or explanation.`;
 				usage: {
 					promptTokens: response.data.usage?.input_tokens || 0,
 					completionTokens: response.data.usage?.output_tokens || 0,
-					totalTokens: response.data.usage?.input_tokens + response.data.usage?.output_tokens || 0
+					totalTokens: (response.data.usage?.input_tokens || 0) + (response.data.usage?.output_tokens || 0)
 				},
 				model,
 				provider: 'anthropic'
 			};
-		} catch (error: any) {
+		} catch (error: unknown) {
 			if (axios.isAxiosError(error)) {
 				if (error.response?.status === 401) {
 					throw new Error('Invalid Anthropic API key. Please check your settings.');
@@ -644,10 +640,11 @@ Return ONLY the commented code, no markdown or explanation.`;
 	/**
 	 * Call Google Gemini API
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async callGoogle(
 		model: AIModel,
 		prompt: string,
-		contextMessages: ChatMessage[]
+		_contextMessages: ChatMessage[]
 	): Promise<AIResponse> {
 		const apiKey = this.apiKeys.get('google');
 		if (!apiKey) {
@@ -697,7 +694,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 				model,
 				provider: 'google'
 			};
-		} catch (error: any) {
+		} catch (error: unknown) {
 			if (axios.isAxiosError(error)) {
 				if (error.response?.status === 401) {
 					throw new Error('Invalid Google API key. Please check your settings.');
@@ -711,10 +708,11 @@ Return ONLY the commented code, no markdown or explanation.`;
 	/**
 	 * Call Ollama local API
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async callOllama(
 		model: AIModel,
 		prompt: string,
-		contextMessages: ChatMessage[]
+		_contextMessages: ChatMessage[]
 	): Promise<AIResponse> {
 		const baseUrl = this.apiKeys.get('ollama') || 'http://localhost:11434';
 		const ollamaModel = model.replace('ollama-', '');
@@ -748,7 +746,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 				model,
 				provider: 'ollama'
 			};
-		} catch (error: any) {
+		} catch (error: unknown) {
 			if (axios.isAxiosError(error)) {
 				if (error.code === 'ECONNREFUSED') {
 					throw new Error(`Ollama is not running. Please start Ollama and try again.`);
@@ -764,7 +762,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 	 */
 	calculateCost(model: AIModel, tokens: number): number {
 		const config = this.modelConfigs.get(model);
-		if (!config) return 0;
+		if (!config) {return 0;}
 		
 		return (tokens / 1000) * config.costPer1kTokens;
 	}
@@ -788,7 +786,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 	async showModelPicker(): Promise<AIModel | undefined> {
 		const models = this.getAvailableModels();
 		
-		const quickPick = vscode.window.createQuickPick();
+		const quickPick = vscode.window.createQuickPick<vscode.QuickPickItem & { modelId?: AIModel }>();
 		quickPick.title = 'Select AI Model';
 		quickPick.placeholder = 'Choose a model...';
 		quickPick.items = models.map((model) => ({
@@ -796,13 +794,12 @@ Return ONLY the commented code, no markdown or explanation.`;
 			description: `${this.getProviderName(model.provider)} - ${model.description}`,
 			detail: this.isModelConfigured(model.id) ? '✓ Configured' : '⚠ Not configured',
 			modelId: model.id
-		} as { label: string; description: string; detail: string; modelId: AIModel }));
+		}));
 		
 		return new Promise((resolve) => {
-		quickPick.onDidChangeSelection((selection: any[]) => {
-				if (selection[0]) {
-					const item = selection[0] as any;
-					resolve(item.modelId);
+			quickPick.onDidChangeSelection((selection) => {
+				if (selection[0] && selection[0].modelId) {
+					resolve(selection[0].modelId);
 					quickPick.dispose();
 				}
 			});
