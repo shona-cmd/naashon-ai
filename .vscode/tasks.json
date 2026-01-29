@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "npm",
+      "args": ["run", "build"],
+      "type": "shell",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "watch",
+      "command": "npm",
+      "args": ["run", "watch"],
+      "type": "shell",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\[?\\d+:\\d+:\\d+.*",
+          "endsPattern": "^\\[?\\d+:\\d+:\\d+.*"
+        }
+      }
+    }
+  ]
+}
