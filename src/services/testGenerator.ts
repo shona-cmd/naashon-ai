@@ -318,9 +318,9 @@ Return ONLY the complete test code file, no markdown formatting, no backticks, n
                     const pkg = JSON.parse(require('fs').readFileSync(pkgPath, 'utf-8'));
                     const deps = { ...pkg.dependencies, ...pkg.devDependencies };
                     
-                    if (deps['vitest']) return 'vitest';
-                    if (deps['jest']) return 'jest';
-                    if (deps['mocha']) return 'mocha';
+                    if (deps['vitest']) {return 'vitest';}
+                    if (deps['jest']) {return 'jest';}
+                    if (deps['mocha']) {return 'mocha';}
                 }
             } catch {
                 // Ignore
@@ -331,7 +331,7 @@ Return ONLY the complete test code file, no markdown formatting, no backticks, n
                 const reqPath = require('path').join(wsPath, 'requirements.txt');
                 if (require('fs').existsSync(reqPath)) {
                     const req = require('fs').readFileSync(reqPath, 'utf-8');
-                    if (req.includes('pytest')) return 'pytest';
+                    if (req.includes('pytest')) {return 'pytest';}
                 }
             } catch {
                 // Ignore
@@ -400,7 +400,7 @@ Return ONLY the complete test code file, no markdown formatting, no backticks, n
      */
     private extractTestCode(response: string): string {
         // Remove markdown code blocks
-        let code = response
+        const code = response
             .replace(/```[\w]*\n?/g, '')
             .replace(/```/g, '')
             .trim();

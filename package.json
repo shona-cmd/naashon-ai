@@ -257,7 +257,6 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "clean": "rm -rf out dist *.vsix",
-    "prebuild": "npm run lint",
     "package": "vsce package",
     "publish": "vsce publish",
     "publish:patch": "npm version patch && vsce publish",

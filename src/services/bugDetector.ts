@@ -530,9 +530,9 @@ Provide the fixed line only, no markdown.`;
      * Infer severity from category
      */
     private inferSeverity(category: string, title: string): BugSeverity {
-        if (category.toLowerCase() === 'security') return 'high';
-        if (title.toLowerCase().includes('critical') || title.toLowerCase().includes('memory leak')) return 'critical';
-        if (title.toLowerCase().includes('performance') || title.toLowerCase().includes('injection')) return 'high';
+        if (category.toLowerCase() === 'security') {return 'high';}
+        if (title.toLowerCase().includes('critical') || title.toLowerCase().includes('memory leak')) {return 'critical';}
+        if (title.toLowerCase().includes('performance') || title.toLowerCase().includes('injection')) {return 'high';}
         return 'medium';
     }
 
@@ -547,7 +547,7 @@ Provide the fixed line only, no markdown.`;
      * Extract code from response
      */
     private extractCode(response: string): string {
-        let code = response
+        const code = response
             .replace(/```[\w]*\n?/g, '')
             .replace(/```/g, '')
             .trim();

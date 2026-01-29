@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { AICodingAssistant } from './assistant';
 import { EnhancedAICodingAssistant } from './enhancedAssistant';
 import { AIChatViewProvider } from './views/chatViewProvider';
+import { AIMultiLineCompletionProvider } from './ui/completionProvider';
 
 let assistant: AICodingAssistant;
 let enhancedAssistant: EnhancedAICodingAssistant;
@@ -83,6 +84,17 @@ export async function activate(context: vscode.ExtensionContext) {
 		const command = vscode.commands.registerCommand(name, handler);
 		context.subscriptions.push(command);
 	});
+
+	// Register inline AI completion provider
+	const multiLineProvider = new AIMultiLineCompletionProvider(context);
+	context.subscriptions.push(multiLineProvider.register());
+
+	// Add toggle command for completions
+	const toggleCompletionsCmd = vscode.commands.registerCommand(
+		'ai-coding-assistant.toggleCompletions',
+		() => multiLineProvider.toggle()
+	);
+	context.subscriptions.push(toggleCompletionsCmd);
 
 	// Setup code actions provider for quick fixes
 	context.subscriptions.push(

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { MultiModelService } from './multiModelService';
+import { MultiModelService } from '../services/multiModelService';
 
 /**
  * Inline Completion Item
@@ -327,6 +327,7 @@ Return ONLY the completion text, starting exactly where the prefix ends.`;
             label: `AI Suggestion ${index + 1}`,
             detail: `AI-generated ${context.language} completion`,
             documentation: this.generateDocumentation(suggestion, context.language),
+            commitCharacters,
             range: new vscode.Range(0, 0, 0, 0), // Will be adjusted by VS Code
             priority: 10 - index // Higher priority for first suggestions
         }));
