@@ -1,0 +1,269 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║              🚀 AI CODING ASSISTANT - MARKETPLACE DEPLOYMENT 🚀              ║
+║                       STEP-BY-STEP VISUAL GUIDE                             ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+✅ EXTENSION STATUS: READY TO DEPLOY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✓ Built:      out/extension.js (272 KB)
+  ✓ Packaged:   ai-coding-assistant-0.2.0.vsix (84 KB)
+  ✓ Icon:       Professional SVG (4 KB)
+  ✓ Features:   5 AI commands with beautiful UI
+  ✓ Version:    0.2.0
+
+
+🎯 DEPLOYMENT IN 5 EASY STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+STEP 1: Create Your Accounts (5 minutes)
+─────────────────────────────────────────────────────────────────────────────
+
+  A) Microsoft Account
+     ├─ Go to: https://account.microsoft.com
+     ├─ Click "Create account" if needed
+     └─ Verify email
+
+  B) Azure DevOps Organization
+     ├─ Go to: https://dev.azure.com
+     ├─ Sign in with Microsoft account
+     ├─ Click "Create organization"
+     ├─ Name it: "naashon-ai-extension"
+     └─ Click Create
+
+  C) VS Code Marketplace Publisher
+     ├─ Go to: https://marketplace.visualstudio.com/manage/createpublisher
+     ├─ Sign in with Microsoft account
+     ├─ Fill form:
+     │  ├─ Publisher ID: naashon
+     │  ├─ Display Name: Naashon
+     │  └─ Description: Your extension publisher
+     └─ Click Create
+
+
+STEP 2: Create Personal Access Token (PAT) (5 minutes)
+─────────────────────────────────────────────────────────────────────────────
+
+  Go to Azure DevOps (https://dev.azure.com)
+
+  1. Click your avatar (top-right) → User settings
+  
+  2. Click "Personal access tokens"
+  
+  3. Click "+ New Token"
+  
+  4. Fill in the form:
+     ├─ Name: vsce-publisher-token
+     ├─ Organization: naashon-ai-extension
+     ├─ Expiration: 1 year
+     ├─ Scopes: Find "Marketplace"
+     │  └─ Check these boxes:
+     │     ├─ ☑ Manage
+     │     ├─ ☑ Acquire
+     │     └─ ☑ Publish
+     └─ Click "Create"
+  
+  ⚠️  IMPORTANT: Copy the token immediately!
+      You won't see it again!
+
+  📋 Save it in password manager or safe place
+
+
+STEP 3: Run Deployment Script (2 minutes)
+─────────────────────────────────────────────────────────────────────────────
+
+  In terminal, run:
+
+  $ ./deploy.sh
+
+  You'll see a menu:
+
+    1) 📦 Package extension
+    2) 🔐 Login to marketplace    ← Select this
+    3) 🚀 Publish to marketplace  ← Then this
+    4) 👀 View marketplace listing
+    5) 📝 Show publishing guide
+    6) 🔄 Update version and publish
+    7) 📊 Show extension info
+    8) ❌ Exit
+
+
+STEP 4: Login with Your PAT Token (1 minute)
+─────────────────────────────────────────────────────────────────────────────
+
+  When prompted:
+
+  Publisher ID: naashon
+
+  Script will ask: "Enter your PAT token"
+
+  └─ Paste your token from Step 2
+
+  ✓ You'll see: "Login successful!"
+
+
+STEP 5: Publish to Marketplace (1 minute)
+─────────────────────────────────────────────────────────────────────────────
+
+  Select option 3 from the deploy.sh menu
+
+  You'll see:
+
+    Publisher: naashon
+    Name: AI Coding Assistant
+    Version: 0.2.0
+
+  When asked "Publish? (y/n)": Type 'y'
+
+  ✓ Publishing...
+  ✓ Done!
+
+  Your extension is now on the marketplace!
+
+
+⏱️ WHAT HAPPENS NEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  5-10 minutes:  Extension appears on marketplace
+  1 hour:        Indexed in search results
+  24 hours:      Reviews can start appearing
+  1 week:        Early adopters installing
+  1 month:       Track your downloads!
+
+
+🌐 YOUR MARKETPLACE LISTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  After publishing, find your extension at:
+
+  https://marketplace.visualstudio.com/items?itemName=naashon.ai-coding-assistant
+
+  Features will show:
+  ✓ Beautiful icon
+  ✓ 5 AI commands
+  ✓ Installation button
+  ✓ Reviews & ratings
+  ✓ Version history
+
+
+💰 MONETIZATION (Optional)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Your extension is FREE on marketplace (smart strategy!)
+
+  After getting users, you can:
+
+  Option 1: Premium Features
+    ├─ Core 5 features stay free
+    ├─ Create premium tier
+    ├─ Sell on Gumroad, Stripe, or Paddle
+    └─ Users enter premium API key
+
+  Option 2: Subscription Model
+    ├─ Limited API calls in free tier
+    ├─ Unlimited in premium
+    ├─ Monthly/annual subscriptions
+    └─ 80/20 revenue split
+
+  Option 3: GitHub Sponsors
+    ├─ Add sponsor button
+    ├─ Let users support you
+    └─ Get donations
+
+
+🎯 QUICK REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Command                          What it does
+  ─────────────────────────────────────────────────────────────────────────
+
+  ./deploy.sh                      Interactive deployment menu
+  ./STATUS.sh                      Show deployment status
+  npm run build                    Rebuild extension
+  npm run package                  Create .vsix file
+  vsce publish                     Direct publish command
+
+
+📚 IMPORTANT DOCUMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  PUBLISH_NOW.md ............. Complete publishing guide with all details
+  FINAL_CHECKLIST.md ......... Verify everything before publishing
+  DEPLOYMENT_READY.md ....... Summary of your deployment status
+  README.md .................. User-facing documentation
+
+
+🆘 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Problem: "Publisher not found"
+  └─ Solution: Make sure you created publisher at:
+                https://marketplace.visualstudio.com/manage/createpublisher
+
+  Problem: "Invalid PAT token"
+  └─ Solution: Create new token with correct scope (Marketplace)
+                Check: Manage, Acquire, Publish checkboxes
+
+  Problem: "Extension doesn't appear"
+  └─ Solution: Wait 10-15 minutes for marketplace indexing
+                Check your publisher dashboard for status
+
+  Problem: "Port already in use"
+  └─ Solution: Run: npm run clean
+                Then: npm run build
+
+
+🎉 SUCCESS CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  □ Created Microsoft account
+  □ Created Azure DevOps organization
+  □ Registered as marketplace publisher
+  □ Created Personal Access Token (PAT)
+  □ Copied PAT to safe location
+  □ Ran ./deploy.sh
+  □ Selected option 2 (Login)
+  □ Selected option 3 (Publish)
+  □ Published successfully
+  □ Extension appears on marketplace
+  □ Can install from VS Code
+  □ All features work
+  □ Icon displays correctly
+  □ Reviews starting to come in ✨
+
+
+🚀 FINAL COUNTDOWN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Ready? Let's do this!
+
+  Terminal command to get started:
+
+    $ ./deploy.sh
+
+  Then follow the menu:
+    1. Press 2 for Login
+    2. Press 3 for Publish
+    3. Watch your extension go live!
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                          🎊 YOU'RE ABOUT TO GO LIVE! 🎊
+
+         Your beautiful AI Coding Assistant will soon be available to
+         thousands of VS Code developers worldwide! 
+
+         The future is exciting - let's ship this! 🚀
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Version: 0.2.0
+Status: READY FOR MARKETPLACE
+Date: January 29, 2026
+
+Next step: ./deploy.sh
