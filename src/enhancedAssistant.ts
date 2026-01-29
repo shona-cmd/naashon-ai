@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { MultiModelService, AIModel, AIResponse } from './services/multiModelService';
+import { AIChatViewProvider } from './views/chatViewProvider';
 
 /**
  * Enhanced AI Coding Assistant
@@ -10,10 +11,13 @@ export class EnhancedAICodingAssistant {
 	private context: vscode.ExtensionContext;
 	private statusBarItem: vscode.StatusBarItem;
 	private outputChannel: vscode.OutputChannel;
+	private chatViewProvider: AIChatViewProvider;
+	private conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
-	constructor(context: vscode.ExtensionContext) {
+	constructor(context: vscode.ExtensionContext, chatViewProvider?: AIChatViewProvider) {
 		this.context = context;
 		this.multiModelService = new MultiModelService();
+		this.chatViewProvider = chatViewProvider || new AIChatViewProvider(context);
 		
 		// Create status bar item
 		this.statusBarItem = vscode.window.createStatusBarItem(
@@ -893,6 +897,644 @@ Be thorough and specific.`;
 			"'": '&#039;'
 		};
 		return text.replace(/[&<>"']/g, (m) => map[m]);
+	}
+
+	/**
+	 * Generate smart code based on context
+	 */
+	async generateSmartCode(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const description = await vscode.window.showInputBox({
+			placeHolder: 'Describe what you want to generate...'
+		});
+
+		if (!description) return;
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Generating smart code...' },
+			async () => {
+				try {
+					const prompt = `Generate smart, production-ready ${editor.document.languageId} code for: ${description}. Return ONLY code.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					editor.edit((e) => e.insert(editor.selection.active, response.content));
+					vscode.window.showInformationMessage('✨ Smart code generated!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Generate code from comments
+	 */
+	async generateFromComments(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const comments = editor.document.getText(selection);
+
+		if (!comments) {
+			vscode.window.showErrorMessage('No comments selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Generating code from comments...' },
+			async () => {
+				try {
+					const prompt = `Generate ${editor.document.languageId} code that implements these requirements:\n${comments}\n\nReturn ONLY code.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					editor.edit((e) => e.replace(selection, response.content));
+					vscode.window.showInformationMessage('✅ Code generated from comments!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Analyze code deeply
+	 */
+	async analyzeCodeDeeply(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const code = editor.document.getText(selection);
+
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Notification, title: 'Deep analysis...' },
+			async () => {
+				try {
+					const prompt = `Perform deep analysis of this code:\n\`\`\`\n${code}\n\`\`\`\nInclude: bugs, security issues, performance, complexity, best practices.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					this.showAnalysisPanel(response.content);
+					this.showResponse(response, 'Deep Analysis');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Generate documentation
+	 */
+	async generateDocumentation(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const code = editor.document.getText(selection);
+
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Generating documentation...' },
+			async () => {
+				try {
+					const prompt = `Generate comprehensive JSDoc/documentation for this code:\n\`\`\`\n${code}\n\`\`\`\nInclude descriptions, parameters, return types, examples.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					const docCode = response.content + '\n' + code;
+					editor.edit((e) => e.replace(selection, docCode));
+					vscode.window.showInformationMessage('📚 Documentation added!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Simplify code
+	 */
+	async simplifyCode(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const code = editor.document.getText(selection);
+
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Simplifying...' },
+			async () => {
+				try {
+					const response = await this.multiModelService.refactorCode(code, editor.document.languageId);
+					const apply = await this.showDiff(code, response.content, 'Simplified Code');
+					if (apply) {
+						editor.edit((e) => e.replace(selection, response.content));
+						vscode.window.showInformationMessage('✨ Code simplified!');
+					}
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Fix bugs (advanced)
+	 */
+	async fixBugsAdvanced(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const code = editor.document.getText(selection);
+
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Finding bugs...' },
+			async () => {
+				try {
+					const prompt = `Find ALL bugs in this ${editor.document.languageId} code:\n\`\`\`\n${code}\n\`\`\`\nReturn fixed code only.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					const apply = await this.showDiff(code, response.content, 'Bug Fixes');
+					if (apply) {
+						editor.edit((e) => e.replace(selection, response.content));
+						vscode.window.showInformationMessage('🐛 Bugs fixed!');
+					}
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Generate tests (advanced)
+	 */
+	async generateTestsAdvanced(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const code = editor.document.getText(selection);
+
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Generating comprehensive tests...' },
+			async () => {
+				try {
+					const framework = await this.selectTestFramework();
+					if (!framework) return;
+
+					const prompt = `Generate comprehensive unit tests for this ${editor.document.languageId} code using ${framework}:\n\`\`\`\n${code}\n\`\`\`\nReturn tests only.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					editor.edit((e) => e.insert(editor.selection.active, '\n\n' + response.content));
+					vscode.window.showInformationMessage('✅ Tests generated!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Fix code formatting
+	 */
+	async fixFormatting(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const code = editor.document.getText(selection);
+
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Fixing formatting...' },
+			async () => {
+				try {
+					const prompt = `Fix formatting and style for this ${editor.document.languageId} code:\n\`\`\`\n${code}\n\`\`\`\nReturn only formatted code.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					editor.edit((e) => e.replace(selection, response.content));
+					vscode.window.showInformationMessage('🎨 Formatting fixed!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Compare models
+	 */
+	async compareModels(): Promise<void> {
+		const models = this.multiModelService.getAvailableModels();
+		if (models.length < 2) {
+			vscode.window.showWarningMessage('Need at least 2 models configured');
+			return;
+		}
+
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const selection = editor.selection;
+		const code = editor.document.getText(selection);
+
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		vscode.window.showInformationMessage('Model comparison coming soon!');
+	}
+
+	/**
+	 * Chat with selection context
+	 */
+	async chatSelection(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		const selectedCode = editor?.document.getText(editor.selection) || '';
+
+		const userMessage = await vscode.window.showInputBox({
+			placeHolder: 'Ask about the selected code...'
+		});
+
+		if (!userMessage) return;
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Notification, title: 'Thinking...' },
+			async () => {
+				try {
+					const context = selectedCode ? `Here's the code:\n\`\`\`\n${selectedCode}\n\`\`\`` : '';
+					const fullMessage = context ? `${context}\n\n${userMessage}` : userMessage;
+					const response = await this.multiModelService.chat([{ role: 'user', content: fullMessage }]);
+					vscode.window.showInformationMessage(response.content);
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Refine last response
+	 */
+	async refineLastResponse(): Promise<void> {
+		if (this.conversationHistory.length === 0) {
+			vscode.window.showWarningMessage('No previous response to refine');
+			return;
+		}
+
+		const refinement = await vscode.window.showInputBox({
+			placeHolder: 'How would you like to refine the response?'
+		});
+
+		if (!refinement) return;
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Notification, title: 'Refining...' },
+			async () => {
+				try {
+					this.conversationHistory.push({ role: 'user', content: refinement });
+					const response = await this.multiModelService.chat(this.conversationHistory as any);
+					this.conversationHistory.push({ role: 'assistant', content: response.content });
+					vscode.window.showInformationMessage(response.content);
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Migrate code to another language
+	 */
+	async migrateCode(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const code = editor.document.getText(editor.selection);
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		const targetLang = await vscode.window.showInputBox({
+			placeHolder: 'Target language (e.g., Python, Java, Go)...'
+		});
+
+		if (!targetLang) return;
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Migrating code...' },
+			async () => {
+				try {
+					const prompt = `Convert this ${editor.document.languageId} code to ${targetLang}:\n\`\`\`\n${code}\n\`\`\`\nReturn only the converted code.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					editor.edit((e) => e.replace(editor.selection, response.content));
+					vscode.window.showInformationMessage(`✅ Code migrated to ${targetLang}!`);
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Generate code snippet
+	 */
+	async generateSnippet(): Promise<void> {
+		const description = await vscode.window.showInputBox({
+			placeHolder: 'Describe the snippet you need...'
+		});
+
+		if (!description) return;
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Generating snippet...' },
+			async () => {
+				try {
+					const editor = vscode.window.activeTextEditor;
+					const lang = editor?.document.languageId || 'javascript';
+					const prompt = `Generate a reusable ${lang} code snippet for: ${description}\nReturn ONLY code.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					
+					if (editor) {
+						editor.edit((e) => e.insert(editor.selection.active, response.content));
+					}
+					vscode.window.showInformationMessage('✨ Snippet generated!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Find similar patterns
+	 */
+	async findSimilarPatterns(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const code = editor.document.getText(editor.selection);
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Notification, title: 'Searching for patterns...' },
+			async () => {
+				try {
+					const prompt = `Find similar code patterns and refactoring opportunities in:\n\`\`\`\n${code}\n\`\`\``;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					this.showAnalysisPanel(response.content);
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Security audit
+	 */
+	async securityAudit(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('No active editor');
+			return;
+		}
+
+		const code = editor.document.getText(editor.selection);
+		if (!code) {
+			vscode.window.showErrorMessage('No code selected');
+			return;
+		}
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Running security audit...' },
+			async () => {
+				try {
+					const prompt = `Perform comprehensive security audit of this code:\n\`\`\`\n${code}\n\`\`\`\nCheck for: SQL injection, XSS, auth issues, data exposure, crypto weaknesses.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					this.showAnalysisPanel(response.content);
+					vscode.window.showInformationMessage('🔒 Security audit complete!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Generate component
+	 */
+	async generateComponent(): Promise<void> {
+		const name = await vscode.window.showInputBox({
+			placeHolder: 'Component name (e.g., UserCard, LoginForm)...'
+		});
+
+		if (!name) return;
+
+		const description = await vscode.window.showInputBox({
+			placeHolder: 'Component description and requirements...'
+		});
+
+		if (!description) return;
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Generating component...' },
+			async () => {
+				try {
+					const editor = vscode.window.activeTextEditor;
+					const lang = editor?.document.languageId || 'typescript';
+					const prompt = `Generate a production-ready ${name} component in ${lang}:\n${description}\nInclude types, error handling, accessibility.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					vscode.window.showInformationMessage(response.content);
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Generate API endpoint
+	 */
+	async generateAPIEndpoint(): Promise<void> {
+		const method = await vscode.window.showQuickPick(['GET', 'POST', 'PUT', 'DELETE', 'PATCH']);
+		if (!method) return;
+
+		const path = await vscode.window.showInputBox({
+			placeHolder: 'API path (e.g., /users/:id)...'
+		});
+
+		if (!path) return;
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Generating API endpoint...' },
+			async () => {
+				try {
+					const editor = vscode.window.activeTextEditor;
+					const lang = editor?.document.languageId || 'typescript';
+					const prompt = `Generate a ${method} endpoint for path ${path} in ${lang}. Include validation, error handling, and documentation.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					editor?.edit((e) => e.insert(editor.selection.active, response.content));
+					vscode.window.showInformationMessage('✅ API endpoint generated!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Generate CRUD operations
+	 */
+	async generateCRUD(): Promise<void> {
+		const model = await vscode.window.showInputBox({
+			placeHolder: 'Model/Entity name (e.g., User, Product)...'
+		});
+
+		if (!model) return;
+
+		await vscode.window.withProgress(
+			{ location: vscode.ProgressLocation.Window, title: 'Generating CRUD...' },
+			async () => {
+				try {
+					const editor = vscode.window.activeTextEditor;
+					const lang = editor?.document.languageId || 'typescript';
+					const prompt = `Generate complete CRUD operations for ${model} entity in ${lang}. Include database queries, validation, error handling.`;
+					const response = await this.multiModelService.chat([{ role: 'user', content: prompt }]);
+					editor?.edit((e) => e.insert(editor.selection.active, response.content));
+					vscode.window.showInformationMessage('✅ CRUD operations generated!');
+				} catch (error) {
+					this.handleError(error);
+				}
+			}
+		);
+	}
+
+	/**
+	 * Clear conversation history
+	 */
+	async clearHistory(): Promise<void> {
+		this.conversationHistory = [];
+		vscode.window.showInformationMessage('✅ Conversation history cleared!');
+	}
+
+	/**
+	 * Show keyboard shortcuts
+	 */
+	async showShortcuts(): Promise<void> {
+		const panel = vscode.window.createWebviewPanel(
+			'aiShortcuts',
+			'⌨️ AI Assistant Shortcuts',
+			vscode.ViewColumn.One,
+			{ enableScripts: true }
+		);
+
+		const shortcuts = [
+			{ cmd: 'ai-coding-assistant.generateCode', desc: 'Generate code from description' },
+			{ cmd: 'ai-coding-assistant.explainCode', desc: 'Explain selected code' },
+			{ cmd: 'ai-coding-assistant.refactorCode', desc: 'Refactor code' },
+			{ cmd: 'ai-coding-assistant.chat', desc: 'Open AI chat' },
+			{ cmd: 'ai-coding-assistant.fixBugs', desc: 'Find and fix bugs' },
+			{ cmd: 'ai-coding-assistant.generateTests', desc: 'Generate tests' },
+			{ cmd: 'ai-coding-assistant.securityAudit', desc: 'Run security audit' }
+		];
+
+		const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+		body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1e1e1e;color:#e0e0e0;padding:20px}
+		h1{color:#667eea}
+		.shortcut{background:#2d2d2d;padding:12px;margin:8px 0;border-radius:6px;border-left:3px solid #667eea}
+		.cmd{color:#4caf50;font-weight:bold;font-family:monospace}
+		</style></head><body><h1>⌨️ Keyboard Shortcuts</h1>
+		${shortcuts.map(s => `<div class="shortcut"><div class="cmd">${s.cmd}</div><div>${s.desc}</div></div>`).join('')}
+		</body></html>`;
+
+		panel.webview.html = html;
+	}
+
+	/**
+	 * Send to chat
+	 */
+	async sendToChat(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		const selectedCode = editor?.document.getText(editor.selection) || '';
+
+		if (selectedCode) {
+			this.chatViewProvider.postMessage({ type: 'codeContext', code: selectedCode });
+		}
+		
+		vscode.commands.executeCommand('ai-coding-assistant.chat');
+	}
+
+	/**
+	 * Handle editor change
+	 */
+	onEditorChange(editor: vscode.TextEditor): void {
+		// Update context awareness - could be used for intelligent suggestions
+		const fileName = editor.document.fileName;
+		const lineCount = editor.document.lineCount;
+		this.log(`Editor changed: ${fileName} (${lineCount} lines)`);
 	}
 
 	/**

@@ -507,8 +507,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async callOpenAI(
 		model: AIModel,
-		prompt: string,
-		_contextMessages: ChatMessage[]
+		prompt: string
 	): Promise<AIResponse> {
 		const apiKey = this.apiKeys.get('openai');
 		if (!apiKey) {
@@ -528,8 +527,8 @@ Return ONLY the commented code, no markdown or explanation.`;
 			const response = await this.httpClient.post(
 				'https://api.openai.com/v1/chat/completions',
 				{
-					model: model === 'gpt-4-turbo' ? 'gpt-4-turbo-preview' : 
-						   model === 'gpt-4o' ? 'gpt-4o' : model,
+					model: model === 'gpt-4-turbo' ? 'gpt-4-turbo-preview' :
+						model === 'gpt-4o' ? 'gpt-4o' : model,
 					messages,
 					temperature: 0.7,
 					max_tokens: config.maxTokens
@@ -596,8 +595,8 @@ Return ONLY the commented code, no markdown or explanation.`;
 				'https://api.anthropic.com/v1/messages',
 				{
 					model: model === 'claude-3-opus' ? 'claude-3-opus-20240229' :
-						   model === 'claude-3-sonnet' ? 'claude-3-sonnet-20240229' :
-						   'claude-3-haiku-20240307',
+						model === 'claude-3-sonnet' ? 'claude-3-sonnet-20240229' :
+						'claude-3-haiku-20240307',
 					messages,
 					max_tokens: config.maxTokens,
 					temperature: 0.7
@@ -640,11 +639,9 @@ Return ONLY the commented code, no markdown or explanation.`;
 	/**
 	 * Call Google Gemini API
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async callGoogle(
 		model: AIModel,
-		prompt: string,
-		_contextMessages: ChatMessage[]
+		prompt: string
 	): Promise<AIResponse> {
 		const apiKey = this.apiKeys.get('google');
 		if (!apiKey) {
@@ -708,11 +705,9 @@ Return ONLY the commented code, no markdown or explanation.`;
 	/**
 	 * Call Ollama local API
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async callOllama(
 		model: AIModel,
-		prompt: string,
-		_contextMessages: ChatMessage[]
+		prompt: string
 	): Promise<AIResponse> {
 		const baseUrl = this.apiKeys.get('ollama') || 'http://localhost:11434';
 		const ollamaModel = model.replace('ollama-', '');

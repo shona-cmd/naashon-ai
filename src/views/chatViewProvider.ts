@@ -6,16 +6,14 @@ export class AIChatViewProvider implements vscode.WebviewViewProvider {
     constructor(private context: vscode.ExtensionContext) {}
 
     resolveWebviewView(
-        webviewView: vscode.WebviewView,
-        _context: vscode.WebviewViewResolveContext,
-        _token: vscode.CancellationToken
-    ) {
+        webviewView: vscode.WebviewView
+    ): void {
         this._view = webviewView;
         webviewView.webview.options = { enableScripts: true };
         webviewView.webview.html = this.getHtml();
     }
 
-    public postMessage(message: any) {
+    public postMessage(message: Record<string, unknown>): void {
         this._view?.webview.postMessage(message);
     }
 
