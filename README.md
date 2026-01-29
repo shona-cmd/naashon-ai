@@ -2,9 +2,10 @@
 
 An intelligent, feature-rich AI-powered coding assistant extension for VS Code that accelerates your development workflow. Generate, explain, and refactor code using advanced AI models with a single keystroke.
 
-![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/naashon.ai-coding-assistant?style=flat-square)
-![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/naashon.ai-coding-assistant?style=flat-square)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-blue?style=flat-square&logo=github)](https://github.com/sponsors/naashon)
+[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/naashon.ai-coding-assistant?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=naashon.ai-coding-assistant)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/naashon.ai-coding-assistant?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=naashon.ai-coding-assistant)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## ✨ Features
 
@@ -228,7 +229,23 @@ Contributions are welcome! Please:
 
 MIT License - see [LICENSE](LICENSE) for details
 
-## 🙋 Support
+## � Support This Project
+
+Love AI Coding Assistant? Consider supporting development!
+
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-blue?style=flat-square&logo=github)](https://github.com/sponsors/naashon)
+[![Ko-fi](https://img.shields.io/badge/Buy%20Me%20A-Coffee-yellow?style=flat-square&logo=ko-fi)](https://ko-fi.com/naashon)
+[![Patreon](https://img.shields.io/badge/Support-Patreon-red?style=flat-square&logo=patreon)](https://patreon.com/naashon)
+
+Your support helps us:
+- Keep the project maintained and updated
+- Add new features and improvements
+- Provide better support and documentation
+- Cover hosting and infrastructure costs
+
+👉 **See [SPONSORS.md](SPONSORS.md) for all ways to support**
+
+## �🙋 Support
 
 - **Issues**: [GitHub Issues](https://github.com/naashon/ai-coding-assistant/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/naashon/ai-coding-assistant/discussions)
