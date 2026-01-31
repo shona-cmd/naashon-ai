@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import * as crypto from 'crypto';
 
 /**
@@ -94,7 +95,7 @@ class InMemoryVectorStore implements VectorStore {
         }
     }
 
-    search(query: number[], topK: number): Array<{ id: string; score: number }>: { id: string; score: number }[] {
+    search(query: number[], topK: number): Array<{ id: string; score: number }> {
         const results: Array<{ id: string; score: number }> = [];
 
         for (const [id, vector] of this.vectors) {
@@ -122,12 +123,12 @@ class InMemoryVectorStore implements VectorStore {
             data[id] = vector;
         }
         // Simple save (in production, use proper serialization)
-        require('fs').writeFileSync(indexPath, JSON.stringify(data));
+        fs.writeFileSync(indexPath, JSON.stringify(data));
     }
 
     load(indexPath: string): void {
         try {
-            const data = require('fs').readFileSync(indexPath, 'utf-8');
+            const data = fs.readFileSync(indexPath, 'utf-8');
             const parsed = JSON.parse(data);
             for (const [id, vector] of Object.entries(parsed)) {
                 this.vectors.set(id, vector as number[]);
@@ -268,8 +269,8 @@ export class IndexingService {
     async initialize(): Promise<void> {
         // Create storage directory
         const storageDir = this.context.globalStoragePath;
-        if (!require('fs').existsSync(storageDir)) {
-            require('fs').mkdirSync(storageDir, { recursive: true });
+        if (!fs.existsSync(storageDir)) {
+            fs.mkdirSync(storageDir, { recursive: true });
         }
 
         // Load existing index
@@ -327,10 +328,10 @@ export class IndexingService {
                         }
 
                         processed++;
-                        const increment = (90 / total);
-                        progress.report({ 
-                            message: `Indexing ${path.basename(filePath)}`,
-                            increment 
+                        const increment = ((processed / total) * 90);
+                        progress.report({
+                            message: `Indexing ${path.basename(filePath)} (${processed}/${total})`,
+                            increment
                         });
                     }
 
@@ -399,8 +400,8 @@ export class IndexingService {
      * Index a single file
      */
     private async indexFile(filePath: string): Promise<IndexedDocument> {
-        const content = require('fs').readFileSync(filePath, 'utf-8');
-        const stat = require('fs').statSync(filePath);
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const stat = fs.statSync(filePath);
         const language = this.detectLanguage(filePath);
 
         // Extract symbols
@@ -805,7 +806,7 @@ export class IndexingService {
             }));
 
             const docsPath = path.join(this.indexPath, 'documents.json');
-            require('fs').writeFileSync(docsPath, JSON.stringify(docsData, null, 2));
+            fs.writeFileSync(docsPath, JSON.stringify(docsData, null, 2));
 
             // Save vector index
             const vectorsPath = path.join(this.indexPath, 'vectors.json');
@@ -824,11 +825,11 @@ export class IndexingService {
             const docsPath = path.join(this.indexPath, 'documents.json');
             const vectorsPath = path.join(this.indexPath, 'vectors.json');
 
-            if (require('fs').existsSync(docsPath)) {
-                const docsData = JSON.parse(require('fs').readFileSync(docsPath, 'utf-8'));
+            if (fs.existsSync(docsPath)) {
+                const docsData = JSON.parse(fs.readFileSync(docsPath, 'utf-8'));
                 
                 for (const docData of docsData) {
-                    const content = require('fs').readFileSync(docData.filePath, 'utf-8');
+                    const content = fs.readFileSync(docData.filePath, 'utf-8');
                     
                     // Recreate chunks
                     const chunks: CodeChunk[] = docData.chunks.map((c: any) => ({
@@ -846,7 +847,7 @@ export class IndexingService {
                 }
             }
 
-            if (require('fs').existsSync(vectorsPath)) {
+            if (fs.existsSync(vectorsPath)) {
                 this.vectorStore.load(vectorsPath);
             }
 

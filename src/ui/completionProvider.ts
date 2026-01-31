@@ -2,44 +2,79 @@ import * as vscode from 'vscode';
 import { MultiModelService } from '../services/multiModelService';
 
 /**
- * Inline Completion Item
+ * Represents a code completion suggestion from the AI model.
  */
 export interface AICompletionItem {
+    /** The text to be inserted when the completion is accepted */
     insertText: string;
+    /** Display label for the completion */
     label: string;
+    /** Brief description of the completion */
     detail: string;
+    /** Detailed documentation with examples */
     documentation: string;
+    /** Range where the completion should be applied */
     range: vscode.Range;
+    /** Priority for sorting suggestions (higher = more relevant) */
     priority: number;
+    /** Characters that commit the completion when typed */
     commitCharacters?: string[];
 }
 
 /**
- * Completion Context
+ * Context information for the current cursor position and document.
+ * Used to generate contextually appropriate completions.
  */
 export interface CompletionContext {
+    /** Code text before the cursor position */
     prefix: string;
+    /** Code text after the cursor position */
     suffix: string;
+    /** Programming language identifier (e.g., 'typescript', 'python') */
     language: string;
+    /** Absolute path to the current file */
     filePath: string;
+    /** Line number (1-indexed) of cursor position */
     lineNumber: number;
+    /** Whitespace indentation at cursor line */
     indentation: string;
 }
 
 /**
- * Inline Completion Provider
- * Provides AI-powered real-time code completions
+ * Configuration constants for completion provider behavior.
+ */
+namespace CompletionConfig {
+    export const DEBOUNCE_MS = 300;
+    export const MAX_PREFIX_LINES = 10;
+    export const MAX_SUFFIX_LINES = 3;
+    export const MIN_PREFIX_LENGTH = 2;
+    export const STATUS_BAR_PRIORITY = 102;
+    export const DEFAULT_MODEL = 'gpt-4o';
+    export const DOCUMENTATION_MAX_LINES = 5;
+}
+
+/**
+ * Provides AI-powered real-time inline code completions as the user types.
+ * Implements VS Code's InlineCompletionItemProvider interface to integrate
+ * with the editor's native completion system.
+ *
+ * Features:
+ * - Debounced completion requests to reduce API calls
+ * - Context-aware suggestions based on code structure
+ * - Smart trigger detection to avoid unwanted completions
+ * - Status bar integration for enable/disable control
  */
 export class AIInlineCompletionProvider implements vscode.InlineCompletionItemProvider {
     private multiModelService: MultiModelService;
     private context: vscode.ExtensionContext;
     private lastCompletionTime: number = 0;
-    private readonly debounceMs: number = 300;
-    private readonly maxPrefixLines: number = 10;
-    private readonly maxSuffixLines: number = 3;
     private statusBarItem?: vscode.StatusBarItem;
     private isEnabled: boolean = true;
 
+    /**
+     * Creates a new inline completion provider.
+     * @param context - VS Code extension context for lifecycle management
+     */
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
         this.multiModelService = new MultiModelService();
@@ -47,12 +82,13 @@ export class AIInlineCompletionProvider implements vscode.InlineCompletionItemPr
     }
 
     /**
-     * Create status bar item
+     * Creates and displays the status bar item for completion control.
+     * Allows users to enable/disable completions from the status bar.
      */
     private createStatusBarItem(): void {
         this.statusBarItem = vscode.window.createStatusBarItem(
             vscode.StatusBarAlignment.Right,
-            102
+            CompletionConfig.STATUS_BAR_PRIORITY
         );
         this.statusBarItem.text = '$(lightbulb) AI Complete';
         this.statusBarItem.tooltip = 'Click to toggle AI completions';
@@ -61,7 +97,14 @@ export class AIInlineCompletionProvider implements vscode.InlineCompletionItemPr
     }
 
     /**
-     * Provide inline completions
+     * Provides inline completion items for the current cursor position.
+     * This is the main entry point called by VS Code when generating completions.
+     *
+     * @param document - The document where completions are requested
+     * @param position - The cursor position in the document
+     * @param context - Additional context about the completion request
+     * @param token - Cancellation token to stop computation if needed
+     * @returns Array of inline completion items or null if no completions available
      */
     async provideInlineCompletionItems(
         document: vscode.TextDocument,
@@ -74,117 +117,133 @@ export class AIInlineCompletionProvider implements vscode.InlineCompletionItemPr
             return null;
         }
 
-        // Debounce rapid requests
+        // Debounce rapid requests to reduce API calls
         const now = Date.now();
-        if (now - this.lastCompletionTime < this.debounceMs) {
+        if (now - this.lastCompletionTime < CompletionConfig.DEBOUNCE_MS) {
             return null;
         }
         this.lastCompletionTime = now;
 
-        // Check cancellation
+        // Check if request has been cancelled
         if (token.isCancellationRequested) {
             return null;
         }
 
-        // Get completion context
+        // Extract context information from document and position
         const completionContext = this.getCompletionContext(document, position);
         if (!completionContext) {
             return null;
         }
 
-        // Check if we should trigger completion
+        // Determine if completion should be triggered based on context
         if (!this.shouldTriggerCompletion(completionContext)) {
             return null;
         }
 
         try {
-            // Generate completions
+            // Request AI completions
             const completions = await this.generateCompletions(completionContext, token);
             
             if (completions.length === 0) {
                 return null;
             }
 
-            // Convert to VS Code inline completion items
-            return completions.map(completion => new vscode.InlineCompletionItem(
-                completion.insertText,
-                new vscode.Range(
+            // Convert AI completions to VS Code inline completion items
+            return completions.map(completion => {
+                const item = new vscode.InlineCompletionItem(
+                    completion.insertText
+                );
+                item.range = new vscode.Range(
                     position,
                     position.translate(0, completion.insertText.length)
-                ),
-                {
-                    title: completion.label,
-                    command: completion.commitCharacters ? {
+                );
+                if (completion.commitCharacters) {
+                    item.command = {
                         command: 'ai-coding-assistant.acceptCompletion',
                         title: 'Accept AI Completion',
                         arguments: [completion]
-                    } : undefined,
-                    detail: completion.detail,
-                    documentation: new vscode.MarkdownString(completion.documentation)
+                    };
                 }
-            ));
+                return item;
+            });
         } catch (error) {
-            console.error('Error generating completions:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Failed to generate inline completions:', errorMessage);
             return null;
         }
     }
 
     /**
-     * Get completion context from document
+     * Extracts the completion context from the current document and cursor position.
+     * Includes surrounding code lines, language information, and indentation details.
+     *
+     * @param document - The text document to extract context from
+     * @param position - The cursor position in the document
+     * @returns CompletionContext with all relevant information, or null if invalid
      */
     private getCompletionContext(
         document: vscode.TextDocument,
         position: vscode.Position
     ): CompletionContext | null {
-        const line = document.lineAt(position);
-        const language = document.languageId;
-        const filePath = document.uri.fsPath;
+        try {
+            const line = document.lineAt(position);
+            const language = document.languageId;
+            const filePath = document.uri.fsPath;
 
-        // Get prefix (lines before current position)
-        const prefixStart = Math.max(0, position.line - this.maxPrefixLines);
+        // Collect preceding lines to provide context for completion
+            const prefixStart = Math.max(0, position.line - CompletionConfig.MAX_PREFIX_LINES);
         const prefixLines: string[] = [];
 
         for (let i = prefixStart; i < position.line; i++) {
             prefixLines.push(document.lineAt(i).text);
         }
 
-        // Get current line prefix (text before cursor)
-        const linePrefix = line.text.substring(0, position.character);
+            // Extract text before cursor on current line
+            const linePrefix = line.text.substring(0, position.character);
 
-        // Get suffix (text after cursor on current line)
-        const lineSuffix = line.text.substring(position.character);
+            // Extract text after cursor on current line
+            const lineSuffix = line.text.substring(position.character);
 
-        // Get indentation
-        const indentation = line.text.match(/^\s*/)?.[0] || '';
+            // Extract leading whitespace for indentation
+            const indentation = line.text.match(/^\s*/) ?.[0] || '';
 
-        return {
-            prefix: [...prefixLines, linePrefix].join('\n'),
-            suffix: lineSuffix,
-            language,
-            filePath,
-            lineNumber: position.line + 1,
-            indentation
-        };
+            return {
+                prefix: [...prefixLines, linePrefix].join('\n'),
+                suffix: lineSuffix,
+                language,
+                filePath,
+                lineNumber: position.line + 1,
+                indentation
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Failed to extract completion context:', errorMessage);
+            return null;
+        }
     }
 
     /**
-     * Determine if we should trigger completion
+     * Determines whether completions should be triggered at the current context.
+     * Uses pattern matching to avoid suggesting completions in unsuitable locations.
+     *
+     * @param context - The completion context to evaluate
+     * @returns True if completions should be generated, false otherwise
      */
     private shouldTriggerCompletion(context: CompletionContext): boolean {
         const trimmedPrefix = context.prefix.trim();
 
-        // Don't trigger after single character (too eager)
-        if (trimmedPrefix.length < 2) {
+        // Don't trigger if prefix is too short
+        if (trimmedPrefix.length < CompletionConfig.MIN_PREFIX_LENGTH) {
             return false;
         }
 
-        // Don't trigger after common triggers
+        // Patterns that should NOT trigger completions
         const noTriggerPatterns = [
-            /^\s*$/,  // Empty
-            /[\s;}]$/,  // End of statement
-            /^\s*\/\//,  // Comment
-            /^\s*#/,  // Python comment
-            /^\s*\*\//,  // End of block comment
+            /^\s*$/,        // Empty or whitespace only
+            /[\s;}]$/,      // Ends with whitespace or statement terminator
+            /^\s*\/\//,    // Line comment
+            /^\s*#/,        // Python comment
+            /^\s*\*\//,    // Block comment end
         ];
 
         for (const pattern of noTriggerPatterns) {
@@ -193,28 +252,28 @@ export class AIInlineCompletionProvider implements vscode.InlineCompletionItemPr
             }
         }
 
-        // Trigger after common completion points
+        // Patterns that SHOULD trigger completions
         const triggerPatterns = [
-            /function\s+\w+$/,  // Function declaration
-            /class\s+\w+$/,  // Class declaration
+            /function\s+\w+$/,      // Function declaration
+            /class\s+\w+$/,         // Class declaration
             /const\s+\w+\s*=\s*$/,  // Variable assignment
-            /let\s+\w+\s*=\s*$/,  // Variable assignment
-            /:\s*$/,  // Type annotation
-            /extends\s+\w+$/,  // Class inheritance
-            /implements\s+[\w,\s]+$/,  // Class implements
-            /return\s+$/,  // Return statement
-            /new\s+\w+$/,  // Constructor call
-            /\.then\s*\($/,  // Promise chain
-            /async\s+$/,  // Async function
-            /await\s+$/,  // Await expression
-            /if\s*\($/,  // If condition
-            /else\s*$/,  // Else clause
-            /for\s*\($/,  // For loop
-            /while\s*\($/,  // While loop
-            /try\s*$/,  // Try block
-            /catch\s*\($/,  // Catch block
+            /let\s+\w+\s*=\s*$/,    // Variable assignment
+            /:\s*$/,                // Type annotation
+            /extends\s+\w+$/,       // Class inheritance
+            /implements\s+[\w,\s]+$/, // Interface implementation
+            /return\s+$/,           // Return statement
+            /new\s+\w+$/,           // Constructor call
+            /\.then\s*\($/,         // Promise chain
+            /async\s+$/,            // Async function
+            /await\s+$/,            // Await expression
+            /if\s*\($/,             // If condition
+            /else\s*$/,             // Else clause
+            /for\s*\($/,            // For loop
+            /while\s*\($/,          // While loop
+            /try\s*$/,              // Try block
+            /catch\s*\($/,          // Catch block
             /import\s+.*from\s+$/,  // Import statement
-            /export\s+(default\s+)?$/,  // Export statement
+            /export\s+(default\s+)?$/, // Export statement
         ];
 
         for (const pattern of triggerPatterns) {
@@ -244,7 +303,12 @@ export class AIInlineCompletionProvider implements vscode.InlineCompletionItemPr
     }
 
     /**
-     * Generate AI completions
+     * Generates AI-powered code completions based on the context.
+     * Sends the context to the AI model and parses the response into completion items.
+     *
+     * @param context - The completion context for generating suggestions
+     * @param token - Cancellation token for early termination
+     * @returns Array of generated completion items
      */
     private async generateCompletions(
         context: CompletionContext,
@@ -258,7 +322,7 @@ export class AIInlineCompletionProvider implements vscode.InlineCompletionItemPr
                     role: 'user',
                     content: prompt
                 }
-            ], 'gpt-4o'); // Use fastest model for completions
+            ], CompletionConfig.DEFAULT_MODEL);
 
             if (token.isCancellationRequested) {
                 return [];
@@ -266,85 +330,108 @@ export class AIInlineCompletionProvider implements vscode.InlineCompletionItemPr
 
             return this.parseCompletions(response.content, context);
         } catch (error) {
-            console.error('Error in completion generation:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Failed to generate AI completions:', errorMessage);
             return [];
         }
     }
 
     /**
-     * Build completion prompt
+     * Constructs the prompt for the AI model to generate appropriate completions.
+     * Includes context, instructions, and formatting requirements.
+     *
+     * @param context - The completion context with code information
+     * @returns Formatted prompt string for the AI model
      */
     private buildCompletionPrompt(context: CompletionContext): string {
         const language = context.language.toUpperCase();
+        const indentationSpaces = context.indentation.length;
 
-        return `You are a code completion AI. Complete the following ${language} code.
+        return `You are a professional code completion AI assistant. Complete the following ${language} code.
 
 CONTEXT:
 \`\`\`${language}
 ${context.prefix}
 \`\`\`
 
-SUFFIX (what comes after):
+SUFFIX (code that comes after cursor):
 ${context.suffix ? `\`\`\`${language}
 ${context.suffix}
 \`\`\`` : '(empty - end of file)'}
 
 INSTRUCTIONS:
-1. Complete the code based on the context
-2. The prefix shows what you've written so far
-3. Return ONLY the completion text (no code blocks, no explanations)
-4. Make the completion natural and useful
-5. If the suffix is empty, include closing braces/brackets/parens if needed
-6. Use consistent indentation (${context.indentation.length} spaces)
+1. Analyze the provided prefix to understand the code context and patterns
+2. Generate natural, idiomatic completions that follow the existing code style
+3. Return ONLY the completion text with no explanations or code block markers
+4. If the suffix is empty, include closing braces/brackets/parentheses as needed
+5. Maintain consistent indentation (${indentationSpaces} spaces)
+6. Ensure the completion flows naturally from the prefix to any suffix
+7. Provide concise, focused completions that are immediately useful
 
-Return ONLY the completion text, starting exactly where the prefix ends.`;
+Return ONLY the completion text, beginning exactly where the prefix ends.`;
     }
 
     /**
-     * Parse completions from AI response
+     * Parses the AI response and converts it into properly formatted completion items.
+     * Handles cleanup of code block markers and creates suggestions with metadata.
+     *
+     * @param response - Raw response from the AI model
+     * @param context - The completion context for metadata
+     * @returns Array of formatted completion items ready for VS Code
      */
     private parseCompletions(response: string, context: CompletionContext): AICompletionItem[] {
         let completion = response.trim();
 
-        // Remove code block markers if present
+        // Clean up markdown code block markers if present
         completion = completion
             .replace(/^```[\w]*\n?/g, '')
             .replace(/```$/g, '')
             .trim();
 
+        // Return empty array if no valid completion
         if (!completion) {
             return [];
         }
 
-        // Determine commit characters based on what we're completing
+        // Extract keyboard commit characters for this completion
         const commitCharacters = this.getCommitCharacters(completion);
 
-        // Split by likely completion boundaries for multiple suggestions
+        // Split completion into multiple suggestions if applicable
         const suggestions = this.splitCompletion(completion);
 
+        // Convert suggestions to completion items with metadata
         return suggestions.map((suggestion, index) => ({
             insertText: suggestion,
             label: `AI Suggestion ${index + 1}`,
             detail: `AI-generated ${context.language} completion`,
             documentation: this.generateDocumentation(suggestion, context.language),
             commitCharacters,
-            range: new vscode.Range(0, 0, 0, 0), // Will be adjusted by VS Code
-            priority: 10 - index // Higher priority for first suggestions
+            range: new vscode.Range(0, 0, 0, 0), // Adjusted by VS Code
+            priority: 10 - index // Higher priority for earlier suggestions
         }));
     }
 
     /**
-     * Get appropriate commit characters
+     * Determines keyboard characters that will commit (accept) the completion.
+     * Allows users to accept completions naturally while continuing to type.
+     *
+     * @param completion - The completion text to analyze
+     * @returns Array of commit characters or undefined if none applicable
      */
     private getCommitCharacters(completion: string): string[] | undefined {
         const chars: string[] = [];
 
+        // Add newline as commit character for multi-line completions
         if (completion.includes('\n')) {
             chars.push('Enter');
         }
+
+        // Add parenthesis if completion includes function calls
         if (completion.includes('(')) {
             chars.push('(');
         }
+
+        // Add comma if completion includes comma-separated items
         if (completion.includes(',')) {
             chars.push(',');
         }
@@ -356,9 +443,10 @@ Return ONLY the completion text, starting exactly where the prefix ends.`;
      * Split completion into multiple suggestions if applicable
      */
     private splitCompletion(completion: string): string[] {
-        // If completion contains multiple distinct blocks, split them
+        // Split on double newlines to separate logically distinct code blocks
         const blocks = completion.split(/\n\n+/);
         
+        // Return multiple blocks only if there are genuinely separate suggestions
         if (blocks.length > 1) {
             return blocks;
         }
@@ -367,50 +455,72 @@ Return ONLY the completion text, starting exactly where the prefix ends.`;
     }
 
     /**
-     * Generate documentation for completion
+     * Generates markdown documentation for a completion suggestion.
+     * Formats the completion for display in the hover tooltip.
+     *
+     * @param completion - The completion text to document
+     * @param language - The programming language for syntax highlighting
+     * @returns Markdown-formatted documentation string
      */
     private generateDocumentation(completion: string, language: string): string {
         const lines = completion.split('\n');
         const summary = lines[0] || '';
-        const docLines = lines.slice(1).filter(l => l.trim());
+        const additionalLines = lines.slice(1).filter(l => l.trim());
 
-        return [
+        // Build documentation with proper formatting
+        const docParts: string[] = [
             `**AI-generated ${language} completion**`,
-            '',
-            summary ? `\`\`\`${language}\n${summary}\n\`\`\`` : '',
-            ...docLines.slice(0, 5)
-        ].filter(Boolean).join('\n');
+            ''
+        ];
+
+        // Include first line in code block
+        if (summary) {
+            docParts.push(`\`\`\`${language}\n${summary}\n\`\`\``);
+        }
+
+        // Add additional lines (limited to prevent excessive hover size)
+        docParts.push(...additionalLines.slice(0, CompletionConfig.DOCUMENTATION_MAX_LINES));
+
+        return docParts.filter(Boolean).join('\n');
     }
 
     /**
-     * Toggle completions on/off
+     * Toggles the completion provider on and off.
+     * Updates the status bar UI and notifies the user of the change.
      */
     toggle(): void {
         this.isEnabled = !this.isEnabled;
-        this.statusBarItem!.text = this.isEnabled 
-            ? '$(lightbulb) AI Complete'
-            : '$(lightbulb-off) AI Complete';
-        this.statusBarItem!.tooltip = this.isEnabled
-            ? 'Click to toggle AI completions'
-            : 'AI completions disabled';
+
+        // Update status bar display and tooltip
+        if (this.statusBarItem) {
+            this.statusBarItem.text = this.isEnabled 
+                ? '$(lightbulb) AI Complete'
+                : '$(lightbulb-off) AI Complete';
+            this.statusBarItem.tooltip = this.isEnabled
+                ? 'Click to toggle AI completions (enabled)'
+                : 'Click to toggle AI completions (disabled)';
+        }
         
+        // Notify user of status change
         vscode.window.showInformationMessage(
             `AI Code Completions ${this.isEnabled ? 'enabled' : 'disabled'}`
         );
     }
 
     /**
-     * Get status
+     * Retrieves the current status of the completion provider.
+     * @returns Object containing enabled state and AI model information
      */
     getStatus(): { enabled: boolean; provider: string } {
         return {
             enabled: this.isEnabled,
-            provider: 'GPT-4o'
+            provider: CompletionConfig.DEFAULT_MODEL
         };
     }
 
     /**
-     * Dispose
+     * Cleans up resources used by the provider.
+     * Should be called when the extension is deactivated.
      */
     dispose(): void {
         this.statusBarItem?.dispose();
@@ -418,42 +528,57 @@ Return ONLY the completion text, starting exactly where the prefix ends.`;
 }
 
 /**
- * Multi-line Completion Provider
- * Provides multi-line code completions
+ * Manages registration and lifecycle of the AI inline completion provider.
+ * Acts as a facade for integrating the completion provider with VS Code.
+ *
+ * This class handles:
+ * - Provider registration with VS Code's language extension API
+ * - Delegation of completion requests to the inline provider
+ * - Lifecycle management and resource cleanup
  */
 export class AIMultiLineCompletionProvider {
     private inlineProvider: AIInlineCompletionProvider;
 
+    /**
+     * Creates a new multi-line completion provider wrapper.
+     * @param context - VS Code extension context for lifecycle management
+     */
     constructor(context: vscode.ExtensionContext) {
         this.inlineProvider = new AIInlineCompletionProvider(context);
     }
 
     /**
-     * Register the completion provider
+     * Registers the completion provider with VS Code.
+     * Must be called during extension activation to enable completions.
+     *
+     * @returns Disposable for unregistering the provider
      */
     register(): vscode.Disposable {
         return vscode.languages.registerInlineCompletionItemProvider(
-            { pattern: '**' }, // All file types
+            { pattern: '**' }, // Support all file types
             this.inlineProvider
         );
     }
 
     /**
-     * Get provider status
+     * Retrieves the current status of the completion provider.
+     * @returns Status object with enabled state and model information
      */
     getStatus() {
         return this.inlineProvider.getStatus();
     }
 
     /**
-     * Toggle completions
+     * Toggles the completion provider on and off.
+     * Delegates to the underlying inline provider.
      */
     toggle() {
         this.inlineProvider.toggle();
     }
 
     /**
-     * Dispose
+     * Cleans up resources used by the provider.
+     * Should be called when the extension is deactivated.
      */
     dispose() {
         this.inlineProvider.dispose();

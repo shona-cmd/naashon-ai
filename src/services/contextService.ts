@@ -1,4 +1,4 @@
-shimport * as vscode from 'vscode';
+import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -138,7 +138,7 @@ export class ContextService {
      * Detect primary programming language
      */
     private detectLanguage(): string {
-        const extensions = ['.ts', '.tsx', '.js', '.jsx', '.py', '.java', '.go', '.rs'];
+        // supported extensions
         const counts: { [key: string]: number } = {};
 
         const countFiles = (dir: string): void => {
@@ -209,7 +209,7 @@ export class ContextService {
     private detectFramework(): string | undefined {
         const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
         const requirementsPath = path.join(this.workspaceRoot, 'requirements.txt');
-        const pomPath = path.join(this.workspaceRoot, 'pom.xml');
+        // const pomPath = path.join(this.workspaceRoot, 'pom.xml');
         const goModPath = path.join(this.workspaceRoot, 'go.mod');
 
         // Check package.json
@@ -608,7 +608,7 @@ export class ContextService {
         const graph = this.getCodeGraph();
         if (!graph) return [];
 
-        const fileId = this.pathToId(filePath);
+            // const fileId = this.pathToId(filePath); // not used here
         return Array.from(graph.nodes.values()).filter(
             node => node.filePath === filePath
         );

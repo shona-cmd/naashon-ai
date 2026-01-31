@@ -128,7 +128,7 @@ Be thorough and specific. If no bugs found, state "No bugs detected".`;
             { role: 'user', content: prompt }
         ]);
 
-        return this.parseBugAnalysis(response.content, code);
+        return this.parseBugAnalysis(response.content);
     }
 
     /**
@@ -212,7 +212,7 @@ Return ONLY the fixed code, no markdown, no explanation.`;
         lineNumber: number,
         issue: string
     ): Promise<string> {
-        const lines = code.split('\n');
+        // const lines = code.split('\n'); // reserved for future use
         const targetLine = lines[lineNumber - 1];
 
         const prompt = `Fix this ${language} code at line ${lineNumber}:
@@ -238,7 +238,7 @@ Provide the fixed line only, no markdown.`;
     async checkBugPatterns(code: string, language: string): Promise<DetectedBug[]> {
         const patterns = this.getBugPatterns(language);
         const bugs: DetectedBug[] = [];
-        const lines = code.split('\n');
+        // const lines = code.split('\n'); // unused; reserved for future enhancements
 
         // Check for common patterns using regex
         for (const pattern of patterns) {
@@ -404,7 +404,7 @@ Provide the fixed line only, no markdown.`;
     /**
      * Parse bug analysis response
      */
-    private parseBugAnalysis(response: string, code: string): BugDetectionResult {
+    private parseBugAnalysis(response: string): BugDetectionResult {
         const bugs: DetectedBug[] = [];
 
         // Extract score
@@ -462,11 +462,11 @@ Provide the fixed line only, no markdown.`;
     /**
      * Parse security vulnerabilities
      */
-    private parseSecurityVulnerabilities(response: string, code: string): SecurityVulnerability[] {
+    private parseSecurityVulnerabilities(response: string, _code: string): SecurityVulnerability[] {
         const vulnerabilities: SecurityVulnerability[] = [];
         
         // Simple parsing for demonstration
-        const lines = code.split('\n');
+        // const lines = code.split('\n'); // reserved for parsing if needed
         
         // Look for common security issues
         if (response.toLowerCase().includes('no security vulnerabilities')) {
