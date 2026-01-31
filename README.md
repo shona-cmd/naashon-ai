@@ -80,8 +80,8 @@ Modern, intuitive, and responsive design
 
 #### From GitHub
 ```bash
-git clone https://github.com/shona-cmd/naashon-ai.git
-cd naashon-ai
+git clone https://github.com/naashon/ai-coding-assistant.git
+cd ai-coding-assistant
 npm install
 npm run build
 npm run package  # Creates .vsix file
@@ -204,10 +204,10 @@ Your support helps us:
 We welcome contributions! Here's how you can help:
 
 ### Report Bugs
-Found an issue? [Open an issue](https://github.com/shona-cmd/naashon-ai/issues)
+Found an issue? [Open an issue](https://github.com/naashon/ai-coding-assistant/issues)
 
 ### Suggest Features
-Have an idea? [Start a discussion](https://github.com/shona-cmd/naashon-ai/discussions)
+Have an idea? [Start a discussion](https://github.com/naashon/ai-coding-assistant/discussions)
 
 ### Submit Code
 1. Fork the repository
@@ -228,6 +228,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 - [Development Guide](DEVELOPMENT.md)
 - [Deployment Guide](DEPLOYMENT.md)
 - [Premium Features](PREMIUM_FEATURES.md)
+- [Privacy Policy](PRIVACY_POLICY.md)
+- [Terms of Service](TERMS_OF_SERVICE.md)
 
 ---
 
@@ -279,10 +281,16 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 
 ## 🙋 Support & Community
 
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/shona-cmd/naashon-ai/discussions)
-- 🐛 **Issues**: [Report bugs here](https://github.com/shona-cmd/naashon-ai/issues)
-- 💌 **Email**: Contact via GitHub profile
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/naashon/ai-coding-assistant/discussions)
+- 🐛 **Issues**: [Report bugs here](https://github.com/naashon/ai-coding-assistant/issues)
+- 📧 **Email**: Contact via GitHub profile
 - 💖 **Sponsor**: [Support development](SPONSORS.md)
+
+### Legal & Compliance
+- 📋 **Privacy Policy**: [Read here](PRIVACY_POLICY.md)
+- ⚖️ **Terms of Service**: [Read here](TERMS_OF_SERVICE.md)
+- 🔐 **Security Policy**: [Read here](SECURITY.md)
+- 📜 **License**: [MIT License](LICENSE)
 
 ---
 
@@ -535,8 +543,7 @@ Your support helps us:
 
 - **Issues**: [GitHub Issues](https://github.com/naashon/ai-coding-assistant/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/naashon/ai-coding-assistant/discussions)
-- **Feedback**: Share your thoughts and feature requests
-
+- **Feedback**: Share your thoughts and feature requests- **Email**: Contact through GitHub profile
 ## 🚀 What's Next?
 
 Check out our roadmap in [CHANGELOG.md](CHANGELOG.md) for upcoming features!
