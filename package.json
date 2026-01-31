@@ -16,6 +16,11 @@
   "bugs": {
     "url": "https://github.com/naashon/ai-coding-assistant/issues"
   },
+  "galleryBanner": {
+    "color": "#0066cc",
+    "theme": "dark"
+  },
+  "pricing": "Free",
   "keywords": [
     "ai",
     "coding",
@@ -24,7 +29,9 @@
     "code-explanation",
     "refactoring",
     "gpt",
-    "openai"
+    "openai",
+    "code-quality",
+    "productivity"
   ],
   "icon": "images/icon.png",
   "engines": {
