@@ -1,4 +1,5 @@
-# naashon-ai*AI Coding Assistant Extension Capabilities:*
+# naashon-ai
+*AI Coding Assistant Extension Capabilities:*
 
 - Generate production-ready code from natural language descriptions
 - Explain code line-by-line
