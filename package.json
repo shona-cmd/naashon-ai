@@ -1,289 +1,336 @@
 {
-  "name": "ai-coding-assistant",
-  "displayName": "AI Coding Assistant",
-  "description": "Intelligent AI-powered coding assistant for VS Code - Generate, explain, and refactor code with AI",
-  "version": "0.2.0",
-  "publisher": "naashon",
-  "author": {
-    "name": "Naashon"
-  },
-  "license": "MIT",
-  "homepage": "https://github.com/naashon/ai-coding-assistant",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/naashon/ai-coding-assistant.git"
-  },
-  "bugs": {
-    "url": "https://github.com/naashon/ai-coding-assistant/issues"
-  },
-  "galleryBanner": {
-    "color": "#0066cc",
-    "theme": "dark"
-  },
-  "pricing": "Free",
-  "keywords": [
-    "ai",
-    "coding",
-    "assistant",
-    "code-generation",
-    "code-explanation",
-    "refactoring",
-    "gpt",
-    "openai",
-    "code-quality",
-    "productivity"
-  ],
-  "icon": "images/icon.png",
-  "engines": {
-    "vscode": "^1.85.0"
-  },
-  "categories": [
-    "AI",
-    "Other"
-  ],
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "ai-coding-assistant.generateCode",
-        "title": "Generate Code",
-        "category": "✨ AI Assistant",
-        "icon": "$(sparkle)"
-      },
-      {
-        "command": "ai-coding-assistant.explainCode",
-        "title": "Explain Code",
-        "category": "✨ AI Assistant",
-        "icon": "$(book)"
-      },
-      {
-        "command": "ai-coding-assistant.refactorCode",
-        "title": "Refactor Code",
-        "category": "✨ AI Assistant",
-        "icon": "$(wand)"
-      },
-      {
-        "command": "ai-coding-assistant.optimizePerformance",
-        "title": "Optimize Performance",
-        "category": "✨ AI Assistant",
-        "icon": "$(zap)"
-      },
-      {
-        "command": "ai-coding-assistant.addComments",
-        "title": "Add Comments",
-        "category": "✨ AI Assistant",
-        "icon": "$(comment)"
-      },
-      {
-        "command": "ai-coding-assistant.selectModel",
-        "title": "Select AI Model",
-        "category": "✨ AI Assistant",
-        "icon": "$(settings)"
-      },
-      {
-        "command": "ai-coding-assistant.chat",
-        "title": "Open AI Chat",
-        "category": "✨ AI Assistant",
-        "icon": "$(comment)"
-      },
-      {
-        "command": "ai-coding-assistant.generateTests",
-        "title": "Generate Tests",
-        "category": "✨ AI Assistant",
-        "icon": "$(beaker)"
-      },
-      {
-        "command": "ai-coding-assistant.fixBugs",
-        "title": "Fix Bugs",
-        "category": "✨ AI Assistant",
-        "icon": "$(bug)"
-      },
-      {
-        "command": "ai-coding-assistant.analyzeCode",
-        "title": "Analyze Code",
-        "category": "✨ AI Assistant",
-        "icon": "$(graph)"
-      },
-      {
-        "command": "ai-coding-assistant.showModels",
-        "title": "Show Available Models",
-        "category": "✨ AI Assistant",
-        "icon": "$(list-unordered)"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "ai-coding-assistant.generateCode",
-        "key": "ctrl+shift+g",
-        "mac": "cmd+shift+g",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "ai-coding-assistant.explainCode",
-        "key": "ctrl+shift+e",
-        "mac": "cmd+shift+e",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "ai-coding-assistant.refactorCode",
-        "key": "ctrl+shift+r",
-        "mac": "cmd+shift+r",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "ai-coding-assistant.optimizePerformance",
-        "key": "ctrl+shift+o",
-        "mac": "cmd+shift+o",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "ai-coding-assistant.addComments",
-        "key": "ctrl+shift+c",
-        "mac": "cmd+shift+c",
-        "when": "editorTextFocus"
-      }
-    ],
-    "configuration": {
-      "title": "AI Coding Assistant",
-      "properties": {
-        "ai-coding-assistant.apiKey": {
-          "type": "string",
-          "default": "",
-          "description": "OpenAI API key (for GPT models)"
-        },
-        "ai-coding-assistant.openaiApiKey": {
-          "type": "string",
-          "default": "",
-          "description": "OpenAI API key for GPT-4, GPT-3.5 models"
-        },
-        "ai-coding-assistant.anthropicApiKey": {
-          "type": "string",
-          "default": "",
-          "description": "Anthropic API key for Claude 3 models"
-        },
-        "ai-coding-assistant.googleApiKey": {
-          "type": "string",
-          "default": "",
-          "description": "Google API key for Gemini models"
-        },
-        "ai-coding-assistant.ollamaBaseUrl": {
-          "type": "string",
-          "default": "http://localhost:11434",
-          "description": "Ollama server URL for local models"
-        },
-        "ai-coding-assistant.model": {
-          "type": "string",
-          "default": "gpt-4",
-          "enum": [
-            "gpt-4",
-            "gpt-4-turbo",
-            "gpt-4o",
-            "gpt-3.5-turbo",
-            "claude-3-opus",
-            "claude-3-sonnet",
-            "claude-3-haiku",
-            "gemini-pro",
-            "ollama-llama2",
-            "ollama-codellama",
-            "ollama-mistral",
-            "ollama-codegeex"
-          ],
-          "description": "Default AI model to use"
-        },
-        "ai-coding-assistant.temperature": {
-          "type": "number",
-          "default": 0.7,
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Temperature setting for AI responses (0-1)"
-        },
-        "ai-coding-assistant.maxTokens": {
-          "type": "number",
-          "default": 4096,
-          "description": "Maximum tokens for AI responses"
-        }
-      }
-    },
-    "menus": {
-      "editor/context": [
-        {
-          "command": "ai-coding-assistant.generateCode",
-          "group": "1_ai@1",
-          "when": "editorTextFocus"
-        },
-        {
-          "command": "ai-coding-assistant.explainCode",
-          "group": "1_ai@2",
-          "when": "editorTextFocus && editorHasSelection"
-        },
-        {
-          "command": "ai-coding-assistant.refactorCode",
-          "group": "1_ai@3",
-          "when": "editorTextFocus && editorHasSelection"
-        },
-        {
-          "command": "ai-coding-assistant.optimizePerformance",
-          "group": "1_ai@4",
-          "when": "editorTextFocus && editorHasSelection"
-        },
-        {
-          "command": "ai-coding-assistant.addComments",
-          "group": "1_ai@5",
-          "when": "editorTextFocus && editorHasSelection"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "ai-coding-assistant.generateCode"
-        },
-        {
-          "command": "ai-coding-assistant.explainCode"
-        },
-        {
-          "command": "ai-coding-assistant.refactorCode"
-        },
-        {
-          "command": "ai-coding-assistant.optimizePerformance"
-        },
-        {
-          "command": "ai-coding-assistant.addComments"
-        }
-      ]
-    }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
-    "build": "npm run esbuild-base",
-    "watch": "npm run esbuild-base -- --watch",
-    "test": "node ./out/test/runTest.js",
-    "pretest": "npm run build",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "clean": "rm -rf out dist *.vsix",
-    "package": "vsce package",
-    "publish": "vsce publish",
-    "publish:patch": "npm version patch && vsce publish",
-    "publish:minor": "npm version minor && vsce publish",
-    "publish:major": "npm version major && vsce publish",
-    "publish:ovsx": "ovsx publish"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.85.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "esbuild": "^0.19.0",
-    "eslint": "^8.0.0",
-    "typescript": "^5.0.0",
-    "vsce": "^2.15.0",
-    "ovsx": "^0.8.3",
-    "@vscode/test-electron": "^2.3.0"
-  },
-  "dependencies": {
-    "axios": "^1.6.0"
-  }
+	"name": "ai-coding-assistant",
+	"displayName": "AI Coding Assistant",
+	"description": "Intelligent AI-powered coding assistant for VS Code - Generate, explain, and refactor code with AI",
+	"version": "0.2.0",
+	"publisher": "naashon",
+	"author": {
+		"name": "Naashon"
+	},
+	"license": "MIT",
+	"homepage": "https://github.com/naashon/ai-coding-assistant",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/naashon/ai-coding-assistant.git"
+	},
+	"bugs": {
+		"url": "https://github.com/naashon/ai-coding-assistant/issues"
+	},
+	"galleryBanner": {
+		"color": "#0066cc",
+		"theme": "dark"
+	},
+	"pricing": "Free",
+	"keywords": [
+		"ai",
+		"coding",
+		"assistant",
+		"code-generation",
+		"code-explanation",
+		"refactoring",
+		"gpt",
+		"openai",
+		"code-quality",
+		"productivity"
+	],
+	"icon": "images/icon.png",
+	"engines": {
+		"vscode": "^1.85.0"
+	},
+	"categories": [
+		"AI",
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "ai-coding-assistant.generateCode",
+				"title": "Generate Code",
+				"category": "✨ AI Assistant",
+				"icon": "$(sparkle)"
+			},
+			{
+				"command": "ai-coding-assistant.explainCode",
+				"title": "Explain Code",
+				"category": "✨ AI Assistant",
+				"icon": "$(book)"
+			},
+			{
+				"command": "ai-coding-assistant.refactorCode",
+				"title": "Refactor Code",
+				"category": "✨ AI Assistant",
+				"icon": "$(wand)"
+			},
+			{
+				"command": "ai-coding-assistant.optimizePerformance",
+				"title": "Optimize Performance",
+				"category": "✨ AI Assistant",
+				"icon": "$(zap)"
+			},
+			{
+				"command": "ai-coding-assistant.addComments",
+				"title": "Add Comments",
+				"category": "✨ AI Assistant",
+				"icon": "$(comment)"
+			},
+			{
+				"command": "ai-coding-assistant.selectModel",
+				"title": "Select AI Model",
+				"category": "✨ AI Assistant",
+				"icon": "$(settings)"
+			},
+			{
+				"command": "ai-coding-assistant.chat",
+				"title": "Open AI Chat",
+				"category": "✨ AI Assistant",
+				"icon": "$(comment)"
+			},
+			{
+				"command": "ai-coding-assistant.generateTests",
+				"title": "Generate Tests",
+				"category": "✨ AI Assistant",
+				"icon": "$(beaker)"
+			},
+			{
+				"command": "ai-coding-assistant.fixBugs",
+				"title": "Fix Bugs",
+				"category": "✨ AI Assistant",
+				"icon": "$(bug)"
+			},
+			{
+				"command": "ai-coding-assistant.analyzeCode",
+				"title": "Analyze Code",
+				"category": "✨ AI Assistant",
+				"icon": "$(graph)"
+			},
+			{
+				"command": "ai-coding-assistant.showModels",
+				"title": "Show Available Models",
+				"category": "✨ AI Assistant",
+				"icon": "$(list-unordered)"
+			},
+			{
+				"command": "ai-coding-assistant.checkServerHealth",
+				"title": "Check Server Health",
+				"category": "🔧 Server",
+				"icon": "$(heart)"
+			},
+			{
+				"command": "ai-coding-assistant.showServerStatus",
+				"title": "Show Server Status",
+				"category": "🔧 Server",
+				"icon": "$(dashboard)"
+			},
+			{
+				"command": "ai-coding-assistant.resetCircuitBreaker",
+				"title": "Reset Circuit Breaker",
+				"category": "🔧 Server",
+				"icon": "$(refresh)"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "ai-coding-assistant.generateCode",
+				"key": "ctrl+shift+g",
+				"mac": "cmd+shift+g",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "ai-coding-assistant.explainCode",
+				"key": "ctrl+shift+e",
+				"mac": "cmd+shift+e",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "ai-coding-assistant.refactorCode",
+				"key": "ctrl+shift+r",
+				"mac": "cmd+shift+r",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "ai-coding-assistant.optimizePerformance",
+				"key": "ctrl+shift+o",
+				"mac": "cmd+shift+o",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "ai-coding-assistant.addComments",
+				"key": "ctrl+shift+c",
+				"mac": "cmd+shift+c",
+				"when": "editorTextFocus"
+			}
+		],
+		"configuration": {
+			"title": "AI Coding Assistant",
+			"properties": {
+				"ai-coding-assistant.apiKey": {
+					"type": "string",
+					"default": "",
+					"description": "OpenAI API key (for GPT models)"
+				},
+				"ai-coding-assistant.openaiApiKey": {
+					"type": "string",
+					"default": "",
+					"description": "OpenAI API key for GPT-4, GPT-3.5 models"
+				},
+				"ai-coding-assistant.anthropicApiKey": {
+					"type": "string",
+					"default": "",
+					"description": "Anthropic API key for Claude 3 models"
+				},
+				"ai-coding-assistant.googleApiKey": {
+					"type": "string",
+					"default": "",
+					"description": "Google API key for Gemini models"
+				},
+				"ai-coding-assistant.ollamaBaseUrl": {
+					"type": "string",
+					"default": "http://localhost:11434",
+					"description": "Ollama server URL for local models"
+				},
+				"ai-coding-assistant.model": {
+					"type": "string",
+					"default": "gpt-4",
+					"enum": [
+						"gpt-4",
+						"gpt-4-turbo",
+						"gpt-4o",
+						"gpt-3.5-turbo",
+						"claude-3-opus",
+						"claude-3-sonnet",
+						"claude-3-haiku",
+						"gemini-pro",
+						"ollama-llama2",
+						"ollama-codellama",
+						"ollama-mistral",
+						"ollama-codegeex"
+					],
+					"description": "Default AI model to use"
+				},
+				"ai-coding-assistant.temperature": {
+					"type": "number",
+					"default": 0.7,
+					"minimum": 0,
+					"maximum": 1,
+					"description": "Temperature setting for AI responses (0-1)"
+				},
+				"ai-coding-assistant.maxTokens": {
+					"type": "number",
+					"default": 4096,
+					"description": "Maximum tokens for AI responses"
+				},
+				"ai-coding-assistant.retryAttempts": {
+					"type": "number",
+					"default": 3,
+					"minimum": 1,
+					"maximum": 10,
+					"description": "Number of retry attempts for failed API requests"
+				},
+				"ai-coding-assistant.circuitBreakerThreshold": {
+					"type": "number",
+					"default": 5,
+					"minimum": 1,
+					"maximum": 20,
+					"description": "Number of failures before opening circuit breaker"
+				},
+				"ai-coding-assistant.enableStreaming": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable streaming responses for supported models"
+				}
+			}
+		},
+		"menus": {
+			"editor/context": [
+				{
+					"command": "ai-coding-assistant.generateCode",
+					"group": "1_ai@1",
+					"when": "editorTextFocus"
+				},
+				{
+					"command": "ai-coding-assistant.explainCode",
+					"group": "1_ai@2",
+					"when": "editorTextFocus && editorHasSelection"
+				},
+				{
+					"command": "ai-coding-assistant.refactorCode",
+					"group": "1_ai@3",
+					"when": "editorTextFocus && editorHasSelection"
+				},
+				{
+					"command": "ai-coding-assistant.optimizePerformance",
+					"group": "1_ai@4",
+					"when": "editorTextFocus && editorHasSelection"
+				},
+				{
+					"command": "ai-coding-assistant.addComments",
+					"group": "1_ai@5",
+					"when": "editorTextFocus && editorHasSelection"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "ai-coding-assistant.generateCode"
+				},
+				{
+					"command": "ai-coding-assistant.explainCode"
+				},
+				{
+					"command": "ai-coding-assistant.refactorCode"
+				},
+				{
+					"command": "ai-coding-assistant.optimizePerformance"
+				},
+				{
+					"command": "ai-coding-assistant.addComments"
+				},
+				{
+					"command": "ai-coding-assistant.checkServerHealth"
+				},
+				{
+					"command": "ai-coding-assistant.showServerStatus"
+				},
+				{
+					"command": "ai-coding-assistant.resetCircuitBreaker"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run esbuild-base -- --minify",
+		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+		"build": "npm run esbuild-base",
+		"watch": "npm run esbuild-base -- --watch",
+		"test": "node ./out/test/runTest.js",
+		"pretest": "npm run build",
+		"lint": "eslint src/**/*.ts",
+		"lint:fix": "eslint src/**/*.ts --fix",
+		"clean": "rm -rf out dist *.vsix",
+		"package": "vsce package",
+		"publish": "vsce publish",
+		"publish:patch": "npm version patch && vsce publish",
+		"publish:minor": "npm version minor && vsce publish",
+		"publish:major": "npm version major && vsce publish",
+		"publish:ovsx": "ovsx publish"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"@types/vscode": "^1.85.0",
+		"@typescript-eslint/eslint-plugin": "^6.0.0",
+		"@typescript-eslint/parser": "^6.0.0",
+		"esbuild": "^0.19.0",
+		"eslint": "^8.0.0",
+		"typescript": "^5.0.0",
+		"vsce": "^2.15.0",
+		"ovsx": "^0.8.3",
+		"@vscode/test-electron": "^2.3.0"
+	},
+	"dependencies": {
+		"axios": "^1.6.0"
+	}
 }
+

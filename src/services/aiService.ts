@@ -1,16 +1,29 @@
 import * as vscode from 'vscode';
 import axios, { AxiosInstance } from 'axios';
 
+/**
+ * Server Health Status
+ */
+export interface ServerHealth {
+	status: 'healthy' | 'degraded' | 'unhealthy';
+	latency: number;
+	error?: string;
+	lastChecked: Date;
+}
+
 export class AIService {
 	private apiKey: string = '';
 	private model: string = 'gpt-3.5-turbo';
 	private temperature: number = 0.7;
 	private client: AxiosInstance;
+	private retryAttempts: number = 3;
+	private baseTimeout: number = 30000;
+	private lastHealthCheck: ServerHealth | null = null;
 
 	constructor() {
 		this.loadConfiguration();
 		this.client = axios.create({
-			timeout: 30000,
+			timeout: this.baseTimeout,
 			headers: {
 				'Content-Type': 'application/json'
 			}
@@ -19,15 +32,65 @@ export class AIService {
 
 	private loadConfiguration(): void {
 		const config = vscode.workspace.getConfiguration('ai-coding-assistant');
-		this.apiKey = config.get('apiKey', '');
+		this.apiKey = config.get('apiKey', '') || config.get('openaiApiKey', '');
 		this.model = config.get('model', 'gpt-3.5-turbo');
 		this.temperature = config.get('temperature', 0.7);
+		this.retryAttempts = config.get('retryAttempts', 3);
 
 		if (!this.apiKey) {
 			vscode.window.showWarningMessage(
 				'AI Coding Assistant: API key not configured. Please set your API key in settings.'
 			);
 		}
+	}
+
+	/**
+	 * Sleep utility for retry delays
+	 */
+	private sleep(ms: number): Promise<void> {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+	/**
+	 * Calculate exponential backoff delay
+	 */
+	private getRetryDelay(attempt: number): number {
+		return Math.min(1000 * Math.pow(2, attempt), 30000);
+	}
+
+	/**
+	 * Check server health
+	 */
+	async checkServerHealth(): Promise<ServerHealth> {
+		const startTime = Date.now();
+		let status: ServerHealth['status'] = 'healthy';
+		let error: string | undefined;
+
+		try {
+			await this.client.get('https://api.openai.com/v1/models', {
+				headers: { Authorization: `Bearer ${this.apiKey}` },
+				timeout: 10000
+			});
+		} catch (e) {
+			status = 'unhealthy';
+			error = e instanceof Error ? e.message : String(e);
+		}
+
+		this.lastHealthCheck = {
+			status,
+			latency: Date.now() - startTime,
+			error,
+			lastChecked: new Date()
+		};
+
+		return this.lastHealthCheck;
+	}
+
+	/**
+	 * Get cached health status
+	 */
+	getCachedHealth(): ServerHealth | null {
+		return this.lastHealthCheck;
 	}
 
 	async generateCode(description: string, language: string): Promise<string> {
@@ -129,42 +192,57 @@ Return ONLY the commented code, no markdown or explanation.`;
 			throw new Error('API key not configured. Please set your API key in settings.');
 		}
 
-		try {
-			// This example uses OpenAI API. Adapt to your chosen AI service
-			const response = await this.client.post(
-				'https://api.openai.com/v1/chat/completions',
-				{
-					model: this.model,
-					messages: [
-						{
-							role: 'user',
-							content: prompt
+		let lastError: Error | undefined;
+
+		for (let attempt = 0; attempt <= this.retryAttempts; attempt++) {
+			try {
+				const response = await this.client.post(
+					'https://api.openai.com/v1/chat/completions',
+					{
+						model: this.model,
+						messages: [
+							{
+								role: 'user',
+								content: prompt
+							}
+						],
+						temperature: this.temperature,
+						max_tokens: 2000
+					},
+					{
+						headers: {
+							'Authorization': `Bearer ${this.apiKey}`
 						}
-					],
-					temperature: this.temperature,
-					max_tokens: 2000
-				},
-				{
-					headers: {
-						'Authorization': `Bearer ${this.apiKey}`
 					}
-				}
-			);
+				);
 
-			const content = response.data.choices?.[0]?.message?.content;
-			if (!content) {
-				throw new Error('No response from AI service');
-			}
-
-			return content.trim();
-		} catch (error) {
-			if (axios.isAxiosError(error)) {
-				if (error.response?.status === 401) {
-					throw new Error('Invalid API key. Please check your settings.');
+				const content = response.data.choices?.[0]?.message?.content;
+				if (!content) {
+					throw new Error('No response from AI service');
 				}
-				throw new Error(`AI service error: ${error.message}`);
+
+				return content.trim();
+			} catch (error) {
+				lastError = error instanceof Error ? error : new Error(String(error));
+				
+				// Don't retry on authentication errors
+				if (lastError.message.includes('API key') || lastError.message.includes('401')) {
+					throw lastError;
+				}
+				
+				// Don't retry on no response errors
+				if (lastError.message.includes('No response')) {
+					throw lastError;
+				}
+				
+				// Check if we should retry
+				if (attempt < this.retryAttempts) {
+					const delay = this.getRetryDelay(attempt);
+					await this.sleep(delay);
+				}
 			}
-			throw error;
 		}
+
+		throw lastError || new Error('Request failed after retries');
 	}
 }

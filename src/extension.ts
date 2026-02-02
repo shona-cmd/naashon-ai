@@ -3,13 +3,18 @@ import { AICodingAssistant } from './assistant';
 import { EnhancedAICodingAssistant } from './enhancedAssistant';
 import { AIChatViewProvider } from './views/chatViewProvider';
 import { AIMultiLineCompletionProvider } from './ui/completionProvider';
+import { MultiModelService, ModelProvider } from './services/multiModelService';
 
 let assistant: AICodingAssistant;
 let enhancedAssistant: EnhancedAICodingAssistant;
 let chatViewProvider: AIChatViewProvider;
+let multiModelService: MultiModelService;
 
 export async function activate(context: vscode.ExtensionContext) {
 	console.log('🚀 AI Coding Assistant activated! Version 0.3.0 - World Class Edition');
+
+	// Initialize the multi-model service
+	multiModelService = new MultiModelService();
 
 	// Initialize providers
 	chatViewProvider = new AIChatViewProvider(context);
@@ -77,6 +82,11 @@ export async function activate(context: vscode.ExtensionContext) {
 		{ name: 'ai-coding-assistant.clearHistory', handler: () => enhancedAssistant.clearHistory() },
 		{ name: 'ai-coding-assistant.showShortcuts', handler: () => enhancedAssistant.showShortcuts() },
 		{ name: 'ai-coding-assistant.sendToChat', handler: () => enhancedAssistant.sendToChat() },
+		
+		// Server health & status commands
+		{ name: 'ai-coding-assistant.checkServerHealth', handler: () => checkServerHealth() },
+		{ name: 'ai-coding-assistant.showServerStatus', handler: () => showServerStatus() },
+		{ name: 'ai-coding-assistant.resetCircuitBreaker', handler: () => resetCircuitBreaker() },
 	];
 
 	// Register all commands
@@ -229,5 +239,205 @@ class AIDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 
 export function deactivate() {
 	console.log('👋 AI Coding Assistant deactivated!');
+}
+
+// ============================================
+// Server Health Check Functions
+// ============================================
+
+/**
+ * Check server health for all configured providers
+ */
+async function checkServerHealth(): Promise<void> {
+	await vscode.window.withProgress(
+		{
+			location: vscode.ProgressLocation.Notification,
+			title: 'Checking server health...'
+		},
+		async () => {
+			const providers: ModelProvider[] = ['openai', 'anthropic', 'google', 'ollama'];
+			const results: string[] = [];
+
+			for (const provider of providers) {
+				try {
+					const health = await multiModelService.checkServerHealth(provider);
+					const statusIcon = health.status === 'healthy' ? '✅' : health.status === 'degraded' ? '⚠️' : '❌';
+					const latencyMs = health.latency > 0 ? `${health.latency}ms` : 'N/A';
+					results.push(`${statusIcon} ${multiModelService.getProviderName(provider)}: ${health.status} (${latencyMs})`);
+				} catch (error) {
+					results.push(`❌ ${multiModelService.getProviderName(provider)}: Error - ${error instanceof Error ? error.message : 'Unknown'}`);
+				}
+			}
+
+			const panel = vscode.window.createWebviewPanel(
+				'serverHealth',
+				'🔍 Server Health Status',
+				vscode.ViewColumn.One,
+				{ enableScripts: true }
+			);
+
+			panel.webview.html = generateHealthReportHtml(results, multiModelService);
+		}
+	);
+}
+
+/**
+ * Show detailed server status including circuit breaker state
+ */
+async function showServerStatus(): Promise<void> {
+	await vscode.window.withProgress(
+		{
+			location: vscode.ProgressLocation.Notification,
+			title: 'Gathering server status...'
+		},
+		async () => {
+			const providers: ModelProvider[] = ['openai', 'anthropic', 'google', 'ollama'];
+			const healthResults: string[] = [];
+			const circuitStatus = multiModelService.getCircuitBreakerStatus();
+
+			for (const provider of providers) {
+				try {
+					const health = await multiModelService.checkServerHealth(provider);
+					const circuit = circuitStatus[provider];
+					const statusIcon = health.status === 'healthy' ? '✅' : health.status === 'degraded' ? '⚠️' : '❌';
+					healthResults.push(`
+						<tr>
+							<td>${multiModelService.getProviderName(provider)}</td>
+							<td>${statusIcon} ${health.status}</td>
+							<td>${health.latency}ms</td>
+							<td><span class="circuit-${circuit.state}">${circuit.state.toUpperCase()}</span></td>
+							<td>${circuit.failures}</td>
+						</tr>
+					`);
+				} catch (error) {
+					healthResults.push(`
+						<tr>
+							<td>${multiModelService.getProviderName(provider)}</td>
+							<td>❌ Unhealthy</td>
+							<td>N/A</td>
+							<td><span class="circuit-${circuitStatus[provider].state}">${circuitStatus[provider].state.toUpperCase()}</span></td>
+							<td>${circuitStatus[provider].failures}</td>
+						</tr>
+					`);
+				}
+			}
+
+			const panel = vscode.window.createWebviewPanel(
+				'serverStatus',
+				'📊 Server Status',
+				vscode.ViewColumn.One,
+				{ enableScripts: true }
+			);
+
+			panel.webview.html = generateStatusReportHtml(healthResults);
+		}
+	);
+}
+
+/**
+ * Reset circuit breaker for a provider
+ */
+async function resetCircuitBreaker(): Promise<void> {
+	interface ProviderOption {
+		label: string;
+		id: ModelProvider;
+	}
+
+	const providers: ProviderOption[] = [
+		{ id: 'openai', label: 'OpenAI' },
+		{ id: 'anthropic', label: 'Anthropic' },
+		{ id: 'google', label: 'Google' },
+		{ id: 'ollama', label: 'Ollama' }
+	];
+
+	const selected = await vscode.window.showQuickPick(providers, {
+		placeHolder: 'Select provider to reset circuit breaker...'
+	});
+
+	if (selected) {
+		multiModelService.resetCircuitBreaker(selected.id);
+		vscode.window.showInformationMessage(`✅ Circuit breaker reset for ${selected.label}`);
+	}
+}
+
+/**
+ * Generate HTML for health report
+ */
+function generateHealthReportHtml(results: string[], service: MultiModelService): string {
+	return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Health</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1e1e1e; color: #e0e0e0; padding: 24px; }
+        h1 { color: #667eea; margin-bottom: 20px; }
+        .result { background: #2d2d2d; padding: 12px 16px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #667eea; }
+        .healthy { border-left-color: #4caf50; }
+        .degraded { border-left-color: #ff9800; }
+        .unhealthy { border-left-color: #f44336; }
+        .btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        .btn:hover { background: #5a6fd6; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Server Health Status</h1>
+    ${results.map(r => `<div class="result">${r}</div>`).join('')}
+    <button class="btn" onclick="vscode.postMessage({command: 'refresh'})">🔄 Refresh</button>
+    <script>
+        const vscode = acquireVsCodeApi();
+        document.querySelector('.btn').addEventListener('click', () => {
+            vscode.postMessage({command: 'refresh'});
+        });
+        window.addEventListener('message', (e) => {
+            if (e.data.command === 'refresh') {
+                vscode.commands.executeCommand('ai-coding-assistant.checkServerHealth');
+            }
+        });
+    </script>
+</body>
+</html>`;
+}
+
+/**
+ * Generate HTML for detailed status report
+ */
+function generateStatusReportHtml(healthResults: string[]): string {
+	return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1e1e1e; color: #e0e0e0; padding: 24px; }
+        h1 { color: #667eea; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #3d3d3d; }
+        th { background: #2d2d2d; color: #667eea; }
+        .circuit-closed { color: #4caf50; }
+        .circuit-open { color: #f44336; }
+        .circuit-half-open { color: #ff9800; }
+    </style>
+</head>
+<body>
+    <h1>📊 Server Status & Circuit Breakers</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Provider</th>
+                <th>Status</th>
+                <th>Latency</th>
+                <th>Circuit</th>
+                <th>Failures</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${healthResults.join('')}
+        </tbody>
+    </table>
+</body>
+</html>`;
 }
 
