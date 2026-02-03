@@ -1,0 +1,15 @@
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get App Installation Token
+        id: create_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Publish to GitHub Marketplace
+        run: |
+          echo "Using token: ${{ steps.create_token.outputs.token }}"
+          # Add your publishing logic here (e.g., uploading the app manifest)   
