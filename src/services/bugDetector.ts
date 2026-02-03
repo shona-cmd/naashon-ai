@@ -167,7 +167,7 @@ If no vulnerabilities, return "No security vulnerabilities detected".`;
             { role: 'user', content: prompt }
         ]);
 
-        return this.parseSecurityVulnerabilities(response.content, code);
+        return this.parseSecurityVulnerabilities(response.content);
     }
 
     /**
@@ -212,7 +212,7 @@ Return ONLY the fixed code, no markdown, no explanation.`;
         lineNumber: number,
         issue: string
     ): Promise<string> {
-        // const lines = code.split('\n'); // reserved for future use
+        const lines = code.split('\n');
         const targetLine = lines[lineNumber - 1];
 
         const prompt = `Fix this ${language} code at line ${lineNumber}:
@@ -238,7 +238,6 @@ Provide the fixed line only, no markdown.`;
     async checkBugPatterns(code: string, language: string): Promise<DetectedBug[]> {
         const patterns = this.getBugPatterns(language);
         const bugs: DetectedBug[] = [];
-        // const lines = code.split('\n'); // unused; reserved for future enhancements
 
         // Check for common patterns using regex
         for (const pattern of patterns) {
@@ -246,7 +245,7 @@ Provide the fixed line only, no markdown.`;
             let match;
             
             while ((match = regex.exec(code)) !== null) {
-                const lineNumber = code.substring(0, match.index).split('\n').length;
+                const lineNum = code.substring(0, match.index).split('\n').length;
                 
                 bugs.push({
                     id: this.generateBugId(),
@@ -254,8 +253,8 @@ Provide the fixed line only, no markdown.`;
                     severity: pattern.severity,
                     title: pattern.title,
                     description: pattern.description,
-                    lineNumber,
-                    endLineNumber: lineNumber,
+                    lineNumber: lineNum,
+                    endLineNumber: lineNum,
                     codeSnippet: match[0],
                     fix: pattern.fix || '',
                     fixExplanation: pattern.fixExplanation || '',
@@ -462,11 +461,10 @@ Provide the fixed line only, no markdown.`;
     /**
      * Parse security vulnerabilities
      */
-    private parseSecurityVulnerabilities(response: string, _code: string): SecurityVulnerability[] {
+    private parseSecurityVulnerabilities(response: string): SecurityVulnerability[] {
         const vulnerabilities: SecurityVulnerability[] = [];
         
         // Simple parsing for demonstration
-        // const lines = code.split('\n'); // reserved for parsing if needed
         
         // Look for common security issues
         if (response.toLowerCase().includes('no security vulnerabilities')) {

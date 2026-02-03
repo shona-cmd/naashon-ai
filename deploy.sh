@@ -1,9 +1,24 @@
-#!/bin/bash
-
+#!/usr/bin/env sh
 # 🚀 AI Coding Assistant - Marketplace Deployment Script
-# This script guides you through publishing to VS Code Marketplace
+# POSIX-compliant version (works on Linux, macOS, Windows WSL)
 
+# Exit on error
 set -e
+
+# Color codes with fallbacks
+if [ -t 1 ]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m' # No Color
+else
+    RED=''
+    GREEN=''
+    YELLOW=''
+    BLUE=''
+    NC=''
+fi
 
 echo "╔══════════════════════════════════════════════════════════════════════════════╗"
 echo "║                    🚀 VS CODE MARKETPLACE DEPLOYMENT 🚀                      ║"
@@ -11,61 +26,60 @@ echo "║              AI Coding Assistant - One-Click Publishing Setup         
 echo "╚══════════════════════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Get value from package.json field (POSIX-compatible)
+get_package_field() {
+    field="$1"
+    grep "\"$field\"" package.json | sed 's/.*"'"$field"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | head -1
+}
 
 # Check if we're in the right directory
 if [ ! -f "package.json" ]; then
-    echo -e "${RED}❌ Error: package.json not found${NC}"
+    echo "${RED}❌ Error: package.json not found${NC}"
     echo "Please run this script from the extension root directory"
     exit 1
 fi
 
-echo -e "${BLUE}📋 Pre-Flight Checklist${NC}"
+echo "${BLUE}📋 Pre-Flight Checklist${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Check requirements
 echo ""
-echo -e "Checking requirements..."
+echo "Checking requirements..."
 
-if ! command -v node &> /dev/null; then
-    echo -e "${RED}❌ Node.js not found${NC}"
+if ! command -v node >/dev/null 2>&1; then
+    echo "${RED}❌ Node.js not found${NC}"
     exit 1
 fi
-echo -e "${GREEN}✅ Node.js${NC} $(node --version)"
+echo "${GREEN}✅ Node.js${NC} $(node --version)"
 
-if ! command -v npm &> /dev/null; then
-    echo -e "${RED}❌ npm not found${NC}"
+if ! command -v npm >/dev/null 2>&1; then
+    echo "${RED}❌ npm not found${NC}"
     exit 1
 fi
-echo -e "${GREEN}✅ npm${NC} $(npm --version)"
+echo "${GREEN}✅ npm${NC} $(npm --version)"
 
-if ! npm list vsce &> /dev/null; then
-    echo -e "${YELLOW}⚠️  Installing vsce...${NC}"
+if ! npm list vsce >/dev/null 2>&1; then
+    echo "${YELLOW}⚠️  Installing vsce...${NC}"
     npm install --save-dev @vscode/vsce
 fi
-echo -e "${GREEN}✅ vsce${NC} installed"
+echo "${GREEN}✅ vsce${NC} installed"
 
 # Check if built
 if [ ! -f "out/extension.js" ]; then
     echo ""
-    echo -e "${YELLOW}⚠️  Extension not built yet${NC}"
+    echo "${YELLOW}⚠️  Extension not built yet${NC}"
     echo "Building now..."
     npm run esbuild-base
-    echo -e "${GREEN}✅ Build complete${NC}"
+    echo "${GREEN}✅ Build complete${NC}"
 fi
 
 echo ""
-echo -e "${GREEN}✅ All pre-flight checks passed!${NC}"
+echo "${GREEN}✅ All pre-flight checks passed!${NC}"
 
 # Main menu
 while true; do
     echo ""
-    echo -e "${BLUE}🎯 What would you like to do?${NC}"
+    echo "${BLUE}🎯 What would you like to do?${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  1) 📦 Package extension (.vsix file)"
@@ -77,19 +91,27 @@ while true; do
     echo "  7) 📊 Show extension info"
     echo "  8) ❌ Exit"
     echo ""
-    read -p "Enter your choice (1-8): " choice
 
-    case $choice in
+    printf "Enter your choice (1-8): "
+    read -r choice </dev/tty 2>/dev/null || {
+        echo ""
+        printf "Enter your choice: "
+        read -r choice
+    }
+
+    echo ""
+
+    case "$choice" in
         1)
             echo ""
-            echo -e "${BLUE}📦 Creating .vsix package...${NC}"
+            echo "${BLUE}📦 Creating .vsix package...${NC}"
             npm run package
             VSIX_FILE=$(ls -t *.vsix 2>/dev/null | head -1)
             if [ -f "$VSIX_FILE" ]; then
                 SIZE=$(du -h "$VSIX_FILE" | cut -f1)
-                echo -e "${GREEN}✅ Package created:${NC} $VSIX_FILE ($SIZE)"
+                echo "${GREEN}✅ Package created:${NC} $VSIX_FILE ($SIZE)"
                 echo ""
-                echo -e "${YELLOW}Next steps:${NC}"
+                echo "${YELLOW}Next steps:${NC}"
                 echo "  • Option A: Use 'vsce publish' to upload (recommended)"
                 echo "  • Option B: Upload manually to marketplace"
             fi
@@ -97,10 +119,10 @@ while true; do
 
         2)
             echo ""
-            echo -e "${BLUE}🔐 Marketplace Login${NC}"
+            echo "${BLUE}🔐 Marketplace Login${NC}"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
-            echo -e "${YELLOW}You need a Personal Access Token (PAT) from Azure DevOps${NC}"
+            echo "${YELLOW}You need a Personal Access Token (PAT) from Azure DevOps${NC}"
             echo ""
             echo "Steps to get your PAT:"
             echo "  1. Go to: https://dev.azure.com"
@@ -115,69 +137,77 @@ while true; do
             echo "     • Scopes: Marketplace (Manage, Acquire, Publish)"
             echo "  7. Click Create and COPY the token"
             echo ""
-            read -p "Do you have your PAT token ready? (y/n): " has_token
+            printf "Do you have your PAT token ready? (y/n): "
+            read -r has_token </dev/tty 2>/dev/null || read -r has_token
 
             if [ "$has_token" = "y" ] || [ "$has_token" = "Y" ]; then
-                PUBLISHER=$(grep '"publisher"' package.json | sed 's/.*"publisher": "\([^"]*\)".*/\1/')
-                read -p "Enter your publisher ID [$PUBLISHER]: " pub_input
+                PUBLISHER=$(get_package_field "publisher")
+                printf "Enter your publisher ID [%s]: " "$PUBLISHER"
+                read -r pub_input </dev/tty 2>/dev/null || read -r pub_input
                 PUBLISHER="${pub_input:-$PUBLISHER}"
 
                 echo ""
                 echo "Logging in as publisher: $PUBLISHER"
                 npx vsce login "$PUBLISHER"
-                echo -e "${GREEN}✅ Login successful!${NC}"
+                echo "${GREEN}✅ Login successful!${NC}"
             fi
             ;;
 
         3)
             echo ""
-            echo -e "${BLUE}🚀 Publishing to Marketplace${NC}"
+            echo "${BLUE}🚀 Publishing to Marketplace${NC}"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
 
-            PUBLISHER=$(grep '"publisher"' package.json | sed 's/.*"publisher": "\([^"]*\)".*/\1/')
-            VERSION=$(grep '"version"' package.json | sed 's/.*"version": "\([^"]*\)".*/\1/')
-            DISPLAY_NAME=$(grep '"displayName"' package.json | sed 's/.*"displayName": "\([^"]*\)".*/\1/')
+            PUBLISHER=$(get_package_field "publisher")
+            VERSION=$(get_package_field "version")
+            DISPLAY_NAME=$(get_package_field "displayName")
 
-            echo -e "${YELLOW}Publishing Details:${NC}"
+            echo "${YELLOW}Publishing Details:${NC}"
             echo "  Publisher: $PUBLISHER"
             echo "  Name: $DISPLAY_NAME"
             echo "  Version: $VERSION"
             echo ""
 
-            read -p "Publish $DISPLAY_NAME v$VERSION? (y/n): " confirm
+            printf "Publish %s v%s? (y/n): " "$DISPLAY_NAME" "$VERSION"
+            read -r confirm </dev/tty 2>/dev/null || read -r confirm
+
             if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
                 echo ""
-                echo -e "${YELLOW}Starting publish...${NC}"
+                echo "${YELLOW}Starting publish...${NC}"
                 npx vsce publish
 
                 echo ""
-                echo -e "${GREEN}✅ Published successfully!${NC}"
+                echo "${GREEN}✅ Published successfully!${NC}"
                 echo ""
-                echo -e "${YELLOW}Your extension is now on the marketplace!${NC}"
+                echo "${YELLOW}Your extension is now on the marketplace!${NC}"
                 echo "📍 It may take 5-10 minutes to appear in search"
                 echo "🔗 View it at:"
                 echo "   https://marketplace.visualstudio.com/items?itemName=$PUBLISHER.ai-coding-assistant"
             else
-                echo -e "${YELLOW}Publish cancelled${NC}"
+                echo "${YELLOW}Publish cancelled${NC}"
             fi
             ;;
 
         4)
             echo ""
-            PUBLISHER=$(grep '"publisher"' package.json | sed 's/.*"publisher": "\([^"]*\)".*/\1/')
+            PUBLISHER=$(get_package_field "publisher")
             URL="https://marketplace.visualstudio.com/items?itemName=$PUBLISHER.ai-coding-assistant"
-            echo -e "${BLUE}📍 Your Marketplace Listing${NC}"
+            echo "${BLUE}📍 Your Marketplace Listing${NC}"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
             echo "🔗 $URL"
             echo ""
-            read -p "Open in browser? (y/n): " open_browser
+            printf "Open in browser? (y/n): "
+            read -r open_browser </dev/tty 2>/dev/null || read -r open_browser
+
             if [ "$open_browser" = "y" ] || [ "$open_browser" = "Y" ]; then
-                if command -v xdg-open &> /dev/null; then
+                if command -v xdg-open >/dev/null 2>&1; then
                     xdg-open "$URL"
-                elif command -v open &> /dev/null; then
+                elif command -v open >/dev/null 2>&1; then
                     open "$URL"
+                elif command -v start >/dev/null 2>&1; then
+                    start "$URL"
                 else
                     echo "Please open this URL manually: $URL"
                 fi
@@ -186,7 +216,7 @@ while true; do
 
         5)
             echo ""
-            echo -e "${BLUE}📝 Publishing Guide${NC}"
+            echo "${BLUE}📝 Publishing Guide${NC}"
             if [ -f "PUBLISH_NOW.md" ]; then
                 cat PUBLISH_NOW.md
             else
@@ -196,7 +226,7 @@ while true; do
 
         6)
             echo ""
-            echo -e "${BLUE}🔄 Version Update & Publish${NC}"
+            echo "${BLUE}🔄 Version Update & Publish${NC}"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
             echo "  1) Patch version (0.2.0 → 0.2.1)"
@@ -204,37 +234,38 @@ while true; do
             echo "  3) Major version (0.2.0 → 1.0.0)"
             echo "  4) Cancel"
             echo ""
-            read -p "Choose version bump (1-4): " version_choice
+            printf "Choose version bump (1-4): "
+            read -r version_choice </dev/tty 2>/dev/null || read -r version_choice
 
-            case $version_choice in
+            case "$version_choice" in
                 1)
-                    echo -e "${YELLOW}Bumping patch version...${NC}"
+                    echo "${YELLOW}Bumping patch version...${NC}"
                     npm run publish:patch
                     ;;
                 2)
-                    echo -e "${YELLOW}Bumping minor version...${NC}"
+                    echo "${YELLOW}Bumping minor version...${NC}"
                     npm run publish:minor
                     ;;
                 3)
-                    echo -e "${YELLOW}Bumping major version...${NC}"
+                    echo "${YELLOW}Bumping major version...${NC}"
                     npm run publish:major
                     ;;
                 *)
-                    echo -e "${YELLOW}Cancelled${NC}"
+                    echo "${YELLOW}Cancelled${NC}"
                     ;;
             esac
             ;;
 
         7)
             echo ""
-            echo -e "${BLUE}📊 Extension Information${NC}"
+            echo "${BLUE}📊 Extension Information${NC}"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
 
-            PUBLISHER=$(grep '"publisher"' package.json | sed 's/.*"publisher": "\([^"]*\)".*/\1/')
-            VERSION=$(grep '"version"' package.json | sed 's/.*"version": "\([^"]*\)".*/\1/')
-            DISPLAY_NAME=$(grep '"displayName"' package.json | sed 's/.*"displayName": "\([^"]*\)".*/\1/')
-            DESCRIPTION=$(grep '"description"' package.json | sed 's/.*"description": "\([^"]*\)".*/\1/')
+            PUBLISHER=$(get_package_field "publisher")
+            VERSION=$(get_package_field "version")
+            DISPLAY_NAME=$(get_package_field "displayName")
+            DESCRIPTION=$(get_package_field "description")
 
             echo "📦 Extension: $DISPLAY_NAME"
             echo "🏷️  ID: $PUBLISHER.ai-coding-assistant"
@@ -244,32 +275,33 @@ while true; do
 
             if [ -f "out/extension.js" ]; then
                 SIZE=$(du -h out/extension.js | cut -f1)
-                echo -e "${GREEN}✅ Built:${NC} out/extension.js ($SIZE)"
+                echo "${GREEN}✅ Built:${NC} out/extension.js ($SIZE)"
             else
-                echo -e "${RED}❌ Not built:${NC} Run 'npm run build' first"
+                echo "${RED}❌ Not built:${NC} Run 'npm run build' first"
             fi
 
             if [ -f "images/icon.png" ]; then
                 ICON_SIZE=$(du -h images/icon.png | cut -f1)
-                echo -e "${GREEN}✅ Icon:${NC} images/icon.png ($ICON_SIZE)"
+                echo "${GREEN}✅ Icon:${NC} images/icon.png ($ICON_SIZE)"
             fi
 
             VSIX_FILE=$(ls -t *.vsix 2>/dev/null | head -1)
             if [ -f "$VSIX_FILE" ]; then
                 VSIX_SIZE=$(du -h "$VSIX_FILE" | cut -f1)
-                echo -e "${GREEN}✅ Package:${NC} $VSIX_FILE ($VSIX_SIZE)"
+                echo "${GREEN}✅ Package:${NC} $VSIX_FILE ($VSIX_SIZE)"
             fi
             echo ""
             ;;
 
         8)
             echo ""
-            echo -e "${GREEN}👋 Thank you for publishing! Good luck with your extension! 🚀${NC}"
+            echo "${GREEN}👋 Thank you for publishing! Good luck with your extension! 🚀${NC}"
             exit 0
             ;;
 
         *)
-            echo -e "${RED}Invalid choice. Please try again.${NC}"
+            echo "${RED}Invalid choice. Please try again.${NC}"
             ;;
     esac
 done
+

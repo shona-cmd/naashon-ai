@@ -182,7 +182,7 @@ export class MultiModelService {
 	 * Sleep utility for retry delays
 	 */
 	private sleep(ms: number): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, ms));
+		return new Promise(resolve => globalThis.setTimeout(resolve, ms));
 	}
 
 	/**
@@ -655,6 +655,7 @@ Return ONLY the commented code, no markdown or explanation.`;
 	private async callOpenAI(
 		model: AIModel,
 		prompt: string,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		_contextMessages: ChatMessage[]
 	): Promise<AIResponse> {
 		const apiKey = this.apiKeys.get('openai');

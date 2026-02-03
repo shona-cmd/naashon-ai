@@ -1,10 +1,179 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Build outputs
 out/
 dist/
+
+# VS Code extension package
 *.vsix
+
+# OS-specific files
+## macOS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+## Windows
+Thumbs.db:encryptable
+ehthumbs.db
+*.log
+*.tmp
+*.tmp.*
+*.swp
+*.swo
+*~
+~*
+
+## Linux
+*~
+.fuse_hidden*
+.nfs*
+.lock
+.trash*
+
+# IDEs and editors
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment files
 .env
 .env.local
-*.log
+.env.*.local
+
+# Test coverage
 coverage/
+
+# VS Code test directory
 .vscode-test/
+
+# Temporary files
+*.temp
+*.tmp
+tmp/
+temp/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# NPM debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Package lock files (optional - if using pnpm/yarn)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build artifacts
+build/
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# macOS Finder metadata
+**/.DS_Store
+**/._*
+
+# Windows thumbnail cache
+**/Thumbs.db
+**/Thumbs.db:encryptable
+
+# Editor directories and files
+.project
+.classpath
+.settings/
+bin/
+gen/
+
+# Backup files
+*.bak
+*.backup
+*backup*
+
+# Logs
+logs/
+*.log
+debug.log
+
+# OS garbage files
+desktop.ini
+
+node_modules/

@@ -1,31 +1,79 @@
+# Dependencies
+node_modules
 
+# Build outputs
+out
+dist
+build
+
+# Test outputs
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+
+# Git
 .git
 .gitignore
-.github
-src
-out/test
-test
-node_modules
-.vscode-test
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Configuration
 .env
 .env.local
+.env.*.local
 *.log
-*.vsix
-coverage
-.DS_Store
-.vscode
-tsconfig.json
-eslint.config.js
-jest.config.js
-CHANGELOG.md
-DEPLOYMENT.md
-DEVELOPMENT.md
-.editorconfig
-.prettierrc
+.eslintcache
+
+# Documentation (included in extension if needed)
 *.md
 !README.md
+!CHANGELOG.md
 !LICENSE
-scripts
-build
-dist
-temp
+
+# Development files
+tsconfig.json
+jsconfig.json
+.eslintrc*
+.eslintconfig*
+.prettierrc
+.editorconfig
+jest.config*
+vitest.config*
+test
+src/test
+.vscode-test
+.vscode-test.mjs
+
+# Additional exclusions
+naashon-AI/
+AI/
+.eslintrc.json
+.depcheckrc
+.yarnrc
+.yarnrc.yml
+package-lock.json
+yarn.lock
+npm-debug.log*
+yarn-error.log*
+
+# Documentation folder
+docs/
+documentation/
+
+# Scripts
+scripts/
+.deploy/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.swp
+*.swo
+*~
+

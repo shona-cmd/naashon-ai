@@ -3,7 +3,6 @@
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-blue?style=flat-square&logo=github)](https://github.com/sponsors/naashon)
 [![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/naashon.ai-coding-assistant?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=naashon.ai-coding-assistant)
 [![Open VSX](https://img.shields.io/badge/Open%20VSX-Extension-purple?style=flat-square)](https://open-vsx.org/extension/naashon/ai-coding-assistant)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/shona-cmd/naashon-ai?style=flat-square&logo=github)](https://github.com/shona-cmd/naashon-ai/stargazers)
 
 **An intelligent, feature-rich AI-powered coding assistant for VS Code** that accelerates your development workflow. Generate, explain, refactor, and optimize code using advanced AI models—all within your editor.
@@ -247,7 +246,6 @@ naashon-ai/
 ├── out/                     # Compiled JavaScript
 ├── package.json             # Extension manifest
 ├── README.md                # This file
-└── LICENSE                  # MIT License
 ```
 
 ---
@@ -275,7 +273,6 @@ See [CHANGELOG.md](CHANGELOG.md) for full history.
 
 ## ⚖️ License
 
-This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -290,7 +287,6 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 - 📋 **Privacy Policy**: [Read here](PRIVACY_POLICY.md)
 - ⚖️ **Terms of Service**: [Read here](TERMS_OF_SERVICE.md)
 - 🔐 **Security Policy**: [Read here](SECURITY.md)
-- 📜 **License**: [MIT License](LICENSE)
 
 ---
 
@@ -521,7 +517,6 @@ Contributions are welcome! Please:
 
 ## 📝 License
 
-MIT License - see [LICENSE](LICENSE) for details
 
 ## � Support This Project
 

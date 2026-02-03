@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
-import { MultiModelService, AIModel } from './multiModelService';
+import * as path from 'path';
+import * as fs from 'fs';
+import { MultiModelService } from './multiModelService';
 
 /**
  * Test Framework Support
@@ -313,9 +315,9 @@ Return ONLY the complete test code file, no markdown formatting, no backticks, n
             
             // Check for package.json
             try {
-                const pkgPath = require('path').join(wsPath, 'package.json');
-                if (require('fs').existsSync(pkgPath)) {
-                    const pkg = JSON.parse(require('fs').readFileSync(pkgPath, 'utf-8'));
+                const pkgPath = path.join(wsPath, 'package.json');
+                if (fs.existsSync(pkgPath)) {
+                    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
                     const deps = { ...pkg.dependencies, ...pkg.devDependencies };
                     
                     if (deps['vitest']) {return 'vitest';}
@@ -328,9 +330,9 @@ Return ONLY the complete test code file, no markdown formatting, no backticks, n
 
             // Check for pytest
             try {
-                const reqPath = require('path').join(wsPath, 'requirements.txt');
-                if (require('fs').existsSync(reqPath)) {
-                    const req = require('fs').readFileSync(reqPath, 'utf-8');
+                const reqPath = path.join(wsPath, 'requirements.txt');
+                if (fs.existsSync(reqPath)) {
+                    const req = fs.readFileSync(reqPath, 'utf-8');
                     if (req.includes('pytest')) {return 'pytest';}
                 }
             } catch {

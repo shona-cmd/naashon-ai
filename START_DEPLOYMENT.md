@@ -44,7 +44,7 @@ ai-coding-assistant-0.2.0.vsix (84 KB)
 |----------|---------|-----------|
 | **DEPLOY_GUIDE.txt** | Visual step-by-step guide | Before starting |
 | **PUBLISH_NOW.md** | Complete detailed guide | Need detailed help |
-| **FINAL_CHECKLIST.md** | Pre-publish verification | Just before publish |
+| **FINAL_CHECKLIST.md** | Ptre-publish verification | Just before publish |
 | **DEPLOYMENT_READY.md** | Status summary | Want quick overview |
 | **README.md** | User documentation | After publish |
 

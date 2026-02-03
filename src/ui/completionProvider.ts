@@ -190,13 +190,13 @@ export class AIInlineCompletionProvider implements vscode.InlineCompletionItemPr
             const language = document.languageId;
             const filePath = document.uri.fsPath;
 
-        // Collect preceding lines to provide context for completion
+            // Collect preceding lines to provide context for completion
             const prefixStart = Math.max(0, position.line - CompletionConfig.MAX_PREFIX_LINES);
-        const prefixLines: string[] = [];
+            const prefixLines: string[] = [];
 
-        for (let i = prefixStart; i < position.line; i++) {
-            prefixLines.push(document.lineAt(i).text);
-        }
+            for (let i = prefixStart; i < position.line; i++) {
+                prefixLines.push(document.lineAt(i).text);
+            }
 
             // Extract text before cursor on current line
             const linePrefix = line.text.substring(0, position.character);

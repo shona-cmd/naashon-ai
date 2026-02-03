@@ -1,7 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env sh
 # Quick Start: Publish Your Extension
+# POSIX-compliant shell script (works on Linux, macOS, Windows WSL, etc.)
 
-echo "🚀 AI Coding Assistant - Quick Deploy"
+# Detect if running in a terminal that supports colors
+if [ -t 1 ]; then
+    BLUE='\033[0;34m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    NC='\033[0m' # No Color
+else
+    BLUE=''
+    GREEN=''
+    YELLOW=''
+    NC=''
+fi
+
+echo "${BLUE}🚀 AI Coding Assistant - Quick Deploy${NC}"
 echo "===================================="
 echo ""
 echo "Your extension is ready to deploy! Follow these steps:"
@@ -35,7 +49,7 @@ echo ""
 echo "STEP 3: Test Locally"
 echo "━━━━━━━━━━━━━━━━━"
 echo "Run: npm run package"
-echo "Then: code --install-extension *.vsix"
+echo "Then: code --install-extension ai-coding-assistant-*.vsix"
 echo ""
 echo "STEP 4: Create Release"
 echo "━━━━━━━━━━━━━━━━━"
@@ -61,6 +75,8 @@ echo "  - Development: cat DEVELOPMENT.md"
 echo ""
 echo "❓ Need help?"
 echo "  - Run: ./scripts/deploy.sh"
+echo "  - For Windows: run deploy.ps1 in PowerShell"
 echo "  - Check: https://code.visualstudio.com/api/working-with-extensions/publishing-extension"
 echo ""
 echo "🎉 Good luck with your extension!"
+

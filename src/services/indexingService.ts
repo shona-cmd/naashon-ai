@@ -560,7 +560,7 @@ export class IndexingService {
                     startLine: symbol.lineNumber,
                     endLine: symbol.endLineNumber,
                     symbols: [symbol.id],
-                    chunkType: symbol.type
+                    chunkType: symbol.type === 'method' ? 'function' : symbol.type
                 };
                 chunks.push(chunk);
             }
@@ -832,7 +832,7 @@ export class IndexingService {
                     const content = fs.readFileSync(docData.filePath, 'utf-8');
                     
                     // Recreate chunks
-                    const chunks: CodeChunk[] = docData.chunks.map((c: any) => ({
+                    const chunks: CodeChunk[] = docData.chunks.map((c: Record<string, unknown>) => ({
                         ...c,
                         content: '',
                         symbols: []

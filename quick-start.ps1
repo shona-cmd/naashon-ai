@@ -1,0 +1,76 @@
+#!/usr/bin/env pwsh
+# Quick Start: Publish Your Extension
+# PowerShell version for Windows users
+# Works with PowerShell 5.1+ (Windows) and PowerShell Core 7+ (cross-platform)
+
+# Color codes for Windows console
+$BLUE = if ($Host.UI.RawUI -and $Host.UI.RawUI.ForegroundColor) { "`e[0;34m" } else { "" }
+$GREEN = if ($Host.UI.RawUI -and $Host.UI.RawUI.ForegroundColor) { "`e[0;32m" } else { "" }
+$YELLOW = if ($Host.UI.RawUI -and $Host.UI.RawUI.ForegroundColor) { "`e[0;33m" } else { "" }
+$NC = if ($Host.UI.RawUI -and $Host.UI.RawUI.ForegroundColor) { "`e[0m" } else { "" }
+
+Write-Host "${BLUE}🚀 AI Coding Assistant - Quick Deploy${NC}" -ForegroundColor Blue
+Write-Host "====================================" -ForegroundColor Blue
+Write-Host ""
+Write-Host "Your extension is ready to deploy! Follow these steps:"
+Write-Host ""
+Write-Host "STEP 1: Get Your API Tokens"
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "1. Create Azure DevOps account:"
+Write-Host "   👉 https://dev.azure.com"
+Write-Host ""
+Write-Host "2. Create Personal Access Token (PAT):"
+Write-Host "   - Go to: Personal access tokens"
+Write-Host "   - Create token with 'Marketplace (manage)' scope"
+Write-Host "   - Save your token (you'll need it)"
+Write-Host ""
+Write-Host "3. Register Publisher on VS Code Marketplace:"
+Write-Host "   - Go to: https://marketplace.visualstudio.com"
+Write-Host "   - Click 'Publish extensions'"
+Write-Host "   - Sign in and create publisher 'naashon'"
+Write-Host ""
+Write-Host "STEP 2: Setup GitHub Secrets"
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "1. Go to your GitHub repo:"
+Write-Host "   👉 https://github.com/naashon/ai-coding-assistant"
+Write-Host ""
+Write-Host "2. Settings → Secrets and variables → Actions"
+Write-Host ""
+Write-Host "3. Add new secrets:"
+Write-Host "   - VSCE_PAT: (your VS Code token)"
+Write-Host "   - OVSX_PAT: (optional, for Open VSX)"
+Write-Host ""
+Write-Host "STEP 3: Test Locally"
+Write-Host "━━━━━━━━━━━━━━━━━"
+Write-Host "Run: npm run package"
+Write-Host "Then: code --install-extension ai-coding-assistant-*.vsix"
+Write-Host ""
+Write-Host "STEP 4: Create Release"
+Write-Host "━━━━━━━━━━━━━━━━━"
+Write-Host "Option A - Automated (Recommended):"
+Write-Host "  git tag v0.1.0"
+Write-Host "  git push origin v0.1.0"
+Write-Host "  ✓ GitHub Actions handles the rest!"
+Write-Host ""
+Write-Host "Option B - Manual:"
+Write-Host "  npm run publish:patch"
+Write-Host "  npm run publish:minor"
+Write-Host "  npm run publish:major"
+Write-Host ""
+Write-Host "STEP 5: Verify"
+Write-Host "━━━━━━━━━━━━"
+Write-Host "After 1-2 hours, check marketplace:"
+Write-Host "👉 https://marketplace.visualstudio.com/items?itemName=naashon.ai-coding-assistant"
+Write-Host ""
+Write-Host "📚 Documentation:"
+Write-Host "  - Full guide: Get-Content DEPLOYMENT.md"
+Write-Host "  - Checklist: Get-Content DEPLOYMENT_CHECKLIST.md"
+Write-Host "  - Development: Get-Content DEVELOPMENT.md"
+Write-Host ""
+Write-Host "❓ Need help?"
+Write-Host "  - Run: ./deploy.ps1"
+Write-Host "  - Or: pwsh ./deploy.ps1"
+Write-Host "  - Check: https://code.visualstudio.com/api/working-with-extensions/publishing-extension"
+Write-Host ""
+Write-Host "🎉 Good luck with your extension!"
+

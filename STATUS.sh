@@ -1,36 +1,46 @@
-#!/bin/bash
+#!/usr/bin/env sh
+# POSIX-compliant status check script for AI Coding Assistant
 
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║                                                                              ║
-# ║          🚀 AI CODING ASSISTANT - MARKETPLACE DEPLOYMENT READY 🚀            ║
-# ║                                                                              ║
-# ║                Your Extension is Built and Ready to Publish!                 ║
-# ║                                                                              ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
+# Get current directory safely
+CURRENT_DIR=$(pwd)
+
+# Check if we're in the right directory
+if [ ! -f "package.json" ]; then
+    echo "❌ Please run this script from the extension root directory"
+    exit 1
+fi
+
+# Color codes with fallbacks
+if [ -t 1 ]; then
+    GREEN='\033[0;32m'
+    BLUE='\033[0;34m'
+    YELLOW='\033[1;33m'
+    NC='\033[0m'
+else
+    GREEN=''
+    BLUE=''
+    YELLOW=''
+    NC=''
+fi
 
 echo "╔══════════════════════════════════════════════════════════════════════════════╗"
 echo "║                    ✨ DEPLOYMENT STATUS REPORT ✨                           ║"
 echo "╚══════════════════════════════════════════════════════════════════════════════╝"
 echo ""
 
-cd "/media/naashon/projects/naashon AI" 2>/dev/null || {
-    echo "❌ Please run this script from the extension root directory"
-    exit 1
+# Get value from package.json field (POSIX-compatible)
+get_package_field() {
+    field="$1"
+    grep "\"$field\"" package.json | sed 's/.*"'"$field"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | head -1
 }
 
-# Colors
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-echo -e "${BLUE}📊 BUILD STATUS${NC}"
+echo "${BLUE}📊 BUILD STATUS${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Check build status
 if [ -f "out/extension.js" ]; then
     SIZE=$(du -h out/extension.js | cut -f1)
-    echo -e "${GREEN}✅ Extension built:${NC} out/extension.js ($SIZE)"
+    echo "${GREEN}✅ Extension built:${NC} out/extension.js ($SIZE)"
 else
     echo "❌ Extension not built"
     exit 1
@@ -38,27 +48,27 @@ fi
 
 if [ -f "images/icon.png" ]; then
     ICON_SIZE=$(du -h images/icon.png | cut -f1)
-    echo -e "${GREEN}✅ Icon created:${NC} images/icon.png ($ICON_SIZE)"
+    echo "${GREEN}✅ Icon created:${NC} images/icon.png ($ICON_SIZE)"
 fi
 
 # Check for VSIX
 VSIX_FILE=$(ls -t *.vsix 2>/dev/null | head -1)
 if [ -f "$VSIX_FILE" ]; then
     VSIX_SIZE=$(du -h "$VSIX_FILE" | cut -f1)
-    echo -e "${GREEN}✅ Package ready:${NC} $VSIX_FILE ($VSIX_SIZE)"
+    echo "${GREEN}✅ Package ready:${NC} $VSIX_FILE ($VSIX_SIZE)"
 else
     echo "❌ Package not found"
     exit 1
 fi
 
 echo ""
-echo -e "${BLUE}📦 EXTENSION DETAILS${NC}"
+echo "${BLUE}📦 EXTENSION DETAILS${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-PUBLISHER=$(grep '"publisher"' package.json | sed 's/.*"publisher": "\([^"]*\)".*/\1/')
-VERSION=$(grep '"version"' package.json | sed 's/.*"version": "\([^"]*\)".*/\1/')
-DISPLAY_NAME=$(grep '"displayName"' package.json | sed 's/.*"displayName": "\([^"]*\)".*/\1/')
-DESCRIPTION=$(grep '"description"' package.json | sed 's/.*"description": "\([^"]*\)".*/\1/' | head -c 80)
+PUBLISHER=$(get_package_field "publisher")
+VERSION=$(get_package_field "version")
+DISPLAY_NAME=$(get_package_field "displayName")
+DESCRIPTION=$(get_package_field "description")
 
 echo "Extension: $DISPLAY_NAME"
 echo "ID: $PUBLISHER.ai-coding-assistant"
@@ -66,7 +76,7 @@ echo "Version: $VERSION"
 echo "Description: $DESCRIPTION..."
 echo ""
 
-echo -e "${BLUE}✨ FEATURES${NC}"
+echo "${BLUE}✨ FEATURES${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo "  1. 💡 Generate Code - Create production-ready code from descriptions"
@@ -76,18 +86,7 @@ echo "  4. ⚡ Optimize Performance - Speed up algorithms (Ctrl+Shift+O)"
 echo "  5. 📝 Add Comments - Auto-generate professional documentation (Ctrl+Shift+C)"
 echo ""
 
-echo -e "${BLUE}🎨 DESIGN${NC}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-echo "  • Modern gradient UI (Purple → Pink)"
-echo "  • Smooth animations and transitions"
-echo "  • Professional SVG icon"
-echo "  • Dark theme optimized"
-echo "  • Copy-to-clipboard button"
-echo "  • Beautiful webview panel"
-echo ""
-
-echo -e "${BLUE}🚀 WHAT'S NEXT${NC}"
+echo "${BLUE}🚀 WHAT'S NEXT${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo ""
@@ -104,7 +103,8 @@ echo "    → Select scope: Marketplace (Manage, Acquire, Publish)"
 echo "    → Copy token"
 echo ""
 echo "  Step 3: Run the deployment script"
-echo "    → ./deploy.sh"
+echo "    → ./deploy.sh (Linux/macOS/WSL)"
+echo "    → ./deploy.ps1 (Windows PowerShell)"
 echo ""
 echo "  Step 4: Follow the interactive menu"
 echo "    → Select option 2: Login with PAT token"
@@ -114,7 +114,7 @@ echo "  Step 5: Done! 🎉"
 echo "    → Your extension will appear on marketplace in 5-10 minutes"
 echo ""
 
-echo -e "${BLUE}📖 DOCUMENTATION${NC}"
+echo "${BLUE}📖 DOCUMENTATION${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo ""
@@ -124,7 +124,7 @@ echo "  📄 README.md .............. User-facing documentation"
 echo "  📄 CHANGELOG.md ........... Version history"
 echo ""
 
-echo -e "${BLUE}💰 MONETIZATION MODEL${NC}"
+echo "${BLUE}💰 MONETIZATION MODEL${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo ""
@@ -143,7 +143,7 @@ echo "    → Enables premium conversions"
 echo "    → No marketplace complications"
 echo ""
 
-echo -e "${BLUE}🎯 QUICK COMMANDS${NC}"
+echo "${BLUE}🎯 QUICK COMMANDS${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo ""
@@ -155,10 +155,9 @@ echo "    → npm run build              # Rebuild"
 echo "    → npm run package            # Create .vsix"
 echo "    → vsce login naashon         # Login with PAT"
 echo "    → vsce publish               # Publish"
-echo "    → vsce show naashon.ai-coding-assistant  # View listing"
 echo ""
 
-echo -e "${BLUE}🌐 MARKETPLACE LINKS${NC}"
+echo "${BLUE}🌐 MARKETPLACE LINKS${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo ""
@@ -169,7 +168,7 @@ echo "  Publisher dashboard:"
 echo "  https://marketplace.visualstudio.com/manage/publishers/$PUBLISHER"
 echo ""
 
-echo -e "${GREEN}✅ YOUR EXTENSION IS READY TO PUBLISH!${NC}"
+echo "${GREEN}✅ YOUR EXTENSION IS READY TO PUBLISH!${NC}"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
@@ -177,3 +176,4 @@ echo "Next step: Run './deploy.sh' to begin publishing"
 echo ""
 echo "Good luck! 🚀 Your AI extension is about to reach thousands of developers!"
 echo ""
+
