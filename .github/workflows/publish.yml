@@ -17,6 +17,19 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Get App Installation Token
+        id: create_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Use App Token
+        run: |
+          echo "App token available: ${{ steps.create_token.outputs.token }}"
+          # Use this token for GitHub API operations requiring app permissions
+          # Example: gh api repos/OWNER/REPO/installation --header "Authorization: Bearer ${{ steps.create_token.outputs.token }}"
+
       - name: Install dependencies
         run: npm ci
 

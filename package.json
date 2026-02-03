@@ -2,7 +2,7 @@
   "name": "naashon-ai",
   "displayName": "AI Coding Assistant",
   "description": "AI-powered coding assistant for VS Code. Generate, explain, refactor, and optimize code using advanced AI models.",
-  "version": "0.2.0",
+  "version": "0.0.1",
   "publisher": "naashon",
   "engines": {
     "vscode": "^1.80.0"
@@ -198,4 +198,3 @@
     "eslint": "^9.39.2"
   }
 }
-

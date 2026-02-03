@@ -1,30 +1,64 @@
-# Publishing Tasks - Automated Method (Option A)
+# TODO: GitHub App Token Integration for Publish Workflow
 
-## Pre-Publishing Quality Checks
-- [x] npm install (install dependencies)
-- [x] npm run lint (verify code quality)
-- [x] npm run build (compile TypeScript)
-- [x] npm run package (create .vsix file) - 7.2MB
-- [x] Verify .vsix file created successfully
+## Plan
+Add GitHub App token authentication to `.github/workflows/publish.yml`
 
-## Version Update
-- [x] Update version in package.json (current: 0.2.0)
-- [x] Update CHANGELOG.md with release notes
-- [x] Commit all changes
+## Steps Completed
+- [x] Analyze current workflow structure
+- [x] Review existing publish.yml configuration
+- [x] Plan GitHub App token integration
+- [x] Get user approval for the plan
+- [x] Edit `.github/workflows/publish.yml` to add GitHub App token step
 
-## Publishing (Automated via GitHub Actions)
-- [ ] Create git tag: `git tag v0.2.0`
-- [ ] Push tag: `git push origin v0.2.0`
-- [ ] Monitor GitHub Actions workflow
-- [ ] Verify extension appears on marketplace
+## Next Steps
+- [ ] Configure GitHub App and add required secrets (APP_ID, PRIVATE_KEY)
 
-## Post-Publishing
-- [ ] Verify marketplace listing
-- [ ] Test installation from marketplace
-- [ ] Monitor for any issues
+## GitHub App Setup Guide
+
+### 1. Create a GitHub App
+1. Go to **GitHub Settings → Developer settings → GitHub Apps → New GitHub App**
+2. Fill in:
+   - **GitHub App name**: `naashon-ai-publisher`
+   - **Homepage URL**: `https://github.com/naashon/ai-coding-assistant`
+   - **Webhook**: Uncheck (not needed for this use case)
+   - **Permissions**: Grant `contents:write` and `releases:write` (or appropriate permissions for your needs)
+3. Create the app and note the **App ID**
+
+### 2. Generate Private Key
+1. On the GitHub App settings page, click **"Generate a private key"**
+2. Download the `.pem` file
+3. Encode it to Base64:
+   ```bash
+   base64 -w 0 your-app-private-key.pem
+   ```
+
+### 3. Install the App
+1. On the GitHub App settings page, click **"Install App"**
+2. Select the repository `naashon/ai-coding-assistant`
+3. Grant access
+
+### 4. Add Secrets to GitHub Repository
+1. Go to **Repository Settings → Secrets and variables → Actions**
+2. Add new repository secrets:
+   - **Name**: `APP_ID`
+     **Value**: Your GitHub App ID (number)
+   - **Name**: `PRIVATE_KEY`
+     **Value**: Base64-encoded private key from step 2
+
+## Usage
+The app token is available as:
+```
+${{ steps.create_token.outputs.token }}
+```
+
+Use it for GitHub API operations requiring app permissions.
+
+## Updated Workflow Flow
+```
+checkout → setup-node → get-app-token → install-deps → build → lint → test → vsce publish → ovsx publish → create-release
+```
 
 ---
-
-*Started: 2026-01-31*
-*Published: 2026-01-31 via GitHub Actions*
+*Created: 2026-01-31*
+*Updated: 2026-01-31*
 
